@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# 提醒：本仓库提交需手动同步到云端（WorkBuddy 运行环境代理拦截 github.com，无法 git push）
+echo ""
+echo "🔔 提醒：本次提交仅在本地。记得在【自己 Mac 终端】运行以下命令同步到 GitHub："
+echo "    bash scripts/backup.sh"
+echo ""
