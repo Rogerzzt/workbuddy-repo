@@ -1,0 +1,113 @@
+{
+  "date": "2026-08-07",
+  "_source": "盘后量化分析自动化任务生成 (automation-1785424522347)；数据来自 aquant/tx回退 + 交易所官网爬虫 + 腾讯自选股/通达信/东财妙想多源验证。所有价位取自当日已三源验证真实行情，无编造。",
+  "_generated_at": "2026-08-07T18:05:00+08:00",
+  "aquant_signal_status": "OK (tx源) — 主源 em/东财不可达自动回退腾讯财经(tx)源成功取数，10只完整；仅 603259 药明康德触发条件 A（收盘>MA20, 乖离+19.27%超买, 量比1.05倍未达20日80分位阈值837022），其余9只条件B量能均未触发",
+  "triggered_tickers": [
+    {
+      "code": "603259",
+      "name": "药明康德",
+      "bias": "偏多",
+      "support_levels": [142.2],
+      "resistance_levels": [],
+      "stop_loss": 142.2,
+      "rationale": "aquant触发条件A（收盘154.82>MA20 129.806, 乖离+19.27%），主力+9.25亿；中报营收+38.93%、归母净利110.8亿(+29.43%)、PE(TTM)21.32倍，中期分红+员工持股三催化。142.2为今日低点/缺口支撑，跌破确认为假突破。"
+    },
+    {
+      "code": "588170",
+      "name": "科创半导体ETF华夏",
+      "bias": "偏多",
+      "support_levels": [0.964],
+      "resistance_levels": [1.016],
+      "stop_loss": 0.964,
+      "rationale": "收盘1.015>MA20 1.001，今日突破压力0.998至1.016；量比0.71偏弱，持有不追。0.964为今日低点支撑。"
+    },
+    {
+      "code": "002594",
+      "name": "比亚迪",
+      "bias": "偏空",
+      "support_levels": [88.55],
+      "resistance_levels": [],
+      "stop_loss": 88.55,
+      "rationale": "收盘90.04<MA20 92.215；一季报营收-11.82%、归母净利-55.38%、PE 29.8倍，业绩承压；今日跌破昨日支撑89.23至88.55，弱势延续。88.55为今日低点。"
+    },
+    {
+      "code": "513130",
+      "name": "恒生科技ETF",
+      "bias": "偏多",
+      "support_levels": [0.595],
+      "resistance_levels": [],
+      "stop_loss": 0.595,
+      "rationale": "收盘0.604>MA20 0.595，但量比0.64缩量；持股观察。0.595为今日低点/短期支撑。"
+    },
+    {
+      "code": "159813",
+      "name": "半导体ETF鹏华",
+      "bias": "观望",
+      "support_levels": [0.745],
+      "resistance_levels": [],
+      "stop_loss": 0.745,
+      "rationale": "收盘0.776<MA20 0.790，反弹不追；0.745为今日低点支撑，回踩方具介入价值。"
+    }
+  ],
+  "support_levels": {
+    "603259": [142.2],
+    "588170": [0.964],
+    "002594": [88.55],
+    "513130": [0.595],
+    "159813": [0.745]
+  },
+  "resistance_levels": {
+    "588170": [1.016]
+  },
+  "market_context": {
+    "phase": "普涨放量修复日 —— 科创/半导体链领涨，成交2.66万亿放量",
+    "sh_index": 3940.04,
+    "sh_change_pct": 1.02,
+    "advance_decline": "2856 涨 / 2536 跌 / 147 平（上涨占比约51%，情绪偏暖）",
+    "turnover_yi": 26644.20,
+    "turnover_change_yi": 1356.38,
+    "margin_balance_yi": 26155.66,
+    "margin_net_buy_yi": 110.29,
+    "watchlist_main_net_flow_yi": 21.61
+  },
+  "review": {
+    "of_date": "2026-08-06",
+    "reviewed_on": "2026-08-07",
+    "method": "以今日(08-07)交易所官网真实高低点回溯昨日state支撑/压力/止损位",
+    "items": [
+      {"code": "588170", "bias": "偏多", "support": 0.916, "resistance": 0.998, "today_low": 0.964, "today_high": 1.016, "result": "突破压力", "correct": true},
+      {"code": "603259", "bias": "偏空", "support": 141.45, "today_low": 142.2, "today_close_pct": 8.49, "result": "守支撑但反涨(中报催化)", "correct": false},
+      {"code": "513130", "bias": "偏空", "support": 0.599, "today_low": 0.595, "result": "破位(跌破止损)", "correct": true},
+      {"code": "002594", "bias": "观望", "support": 89.23, "today_low": 88.55, "result": "破位转弱", "correct": true},
+      {"code": "159813", "bias": "观望", "support": 0.66, "today_low": 0.745, "result": "守支撑", "correct": true}
+    ],
+    "win_rate": 0.8,
+    "win_count": 4,
+    "total": 5,
+    "note": "仅603259因中报超预期+分红+员工持股外生催化反转，非技术面可预判；其余信号均获验证。"
+  },
+  "aquant": {
+    "status": "OK (tx源回退)",
+    "settled_date": "2026-08-07",
+    "source": "tx (腾讯财经；主源 em/东财不可达)",
+    "data_complete": true,
+    "triggered": [
+      {
+        "code": "603259",
+        "name": "药明康德",
+        "condition_A": true,
+        "condition_B": false,
+        "close": 154.82,
+        "ma20": 129.806,
+        "deviation_pct": 19.27,
+        "volume_wan": 92.7,
+        "vol_vs_ma5": 1.05,
+        "volume_threshold_80pct": 837022,
+        "interpretation": "高位放量突破超买：乖离+19.27%严重超买，量比1.05倍未达80分位动态阈值；中报超预期+分红+员工持股三催化"
+      }
+    ],
+    "not_triggered": 9,
+    "abnormal": 0
+  }
+}

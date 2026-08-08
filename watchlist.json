@@ -1,0 +1,19 @@
+{
+  "version": 3,
+  "updated": "2026-08-08",
+  "description": "量化数据采集系统标的清单（按截图标红更新，已移除返利科技）。任务每次执行时读取本文件并逐项采集；变更清单只需修改此文件，无需改动任务代码。2026-08-08 起升级：每项新增 source 字段（manual=手动固定 / auto=周日任务自动轮换），旧数据已自动补 manual 标签，爬虫与 aquant 不校验多余字段，向后兼容。",
+  "etfs": [
+    { "code": "588000", "name": "科创50ETF华夏", "exchange": "SSE", "source": "manual" },
+    { "code": "159813", "name": "半导体ETF鹏华", "exchange": "SZSE", "source": "manual" },
+    { "code": "588170", "name": "科创半导体ETF", "exchange": "SSE", "source": "manual" },
+    { "code": "159516", "name": "半导体设备ETF", "exchange": "SZSE", "source": "manual" },
+    { "code": "159583", "name": "通信ETF富国", "exchange": "SZSE", "source": "manual" },
+    { "code": "513130", "name": "恒生科技ETF", "exchange": "SSE", "source": "manual" },
+    { "code": "560390", "name": "电网设备ETF", "exchange": "SSE", "source": "manual" },
+    { "code": "560350", "name": "中证A50ETF", "exchange": "SSE", "source": "manual" }
+  ],
+  "stocks": [
+    { "code": "002594", "name": "比亚迪", "exchange": "SZSE", "source": "manual" },
+    { "code": "603259", "name": "药明康德", "exchange": "SSE", "source": "manual" }
+  ]
+}

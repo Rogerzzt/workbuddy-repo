@@ -1,0 +1,27 @@
+# ===== Python 产物 =====
+__pycache__/
+*.pyc
+
+# ===== 任务产出报告（按日期生成，不纳入版本控制） =====
+盘前*.md
+盘前*.html
+午间*.md
+午间*.html
+盘中*.md
+盘后*.md
+盘后*.html
+短线*.md
+非农*.md
+
+# ===== 数据采集中间产物（爬虫/行情原始落盘） =====
+data/post/
+data/pre/
+
+# 注意：data/strategy_state_*.json 与 data/weekend_sentiment_*.json
+# 是状态机核心数据，保留纳入版本控制（不在忽略之列）。
+
+# ===== 系统文件 =====
+.DS_Store
+
+# WorkBuddy 项目记忆（含用户/项目信息，不纳入代码仓库）
+.workbuddy/

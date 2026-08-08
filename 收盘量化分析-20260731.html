@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日收盘量化分析 | 2026-07-31</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #1a1a1a; line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 30px 24px; border-radius: 12px; margin-bottom: 20px; }
+  .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .header .subtitle { font-size: 14px; color: #a0aec0; }
+  .header .market-bar { display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+  .header .market-item { background: rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 8px; font-size: 13px; }
+  .header .market-item .label { color: #a0aec0; }
+  .header .market-item .value { font-weight: 700; }
+  .up-color { color: #e74c3c; }
+  .down-color { color: #27ae60; }
+  /* Summary card */
+  .summary-card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .summary-card h2 { font-size: 16px; margin-bottom: 12px; color: #333; border-left: 4px solid #4a90d9; padding-left: 10px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .summary-item { text-align: center; padding: 10px 6px; border-radius: 8px; background: #f8f9fa; }
+  .summary-item .name { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .summary-item .pct { font-size: 18px; font-weight: 700; }
+  .summary-item .price { font-size: 11px; color: #999; }
+  /* Stock section */
+  .stock-section { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .stock-title { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
+  .stock-title .badge { font-size: 12px; padding: 2px 8px; border-radius: 4px; background: #e8eaf6; color: #3f51b5; font-weight: 600; }
+  .stock-title h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+  .stock-title .code { font-size: 13px; color: #999; }
+  .module { margin-bottom: 18px; }
+  .module-title { font-size: 14px; font-weight: 700; color: #4a90d9; margin-bottom: 8px; padding-left: 8px; border-left: 3px solid #4a90d9; }
+  .module p { font-size: 13px; color: #444; margin-bottom: 6px; line-height: 1.8; }
+  /* Data table */
+  .data-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+  .data-table th { background: #f5f7fa; padding: 8px 10px; text-align: left; font-weight: 600; color: #666; border-bottom: 2px solid #e0e0e0; }
+  .data-table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+  .data-table tr:last-child td { border-bottom: none; }
+  /* Verdict box */
+  .verdict { display: inline-block; padding: 3px 12px; border-radius: 4px; font-size: 13px; font-weight: 700; }
+  .verdict-bull { background: #ffebee; color: #c62828; }
+  .verdict-bear { background: #e8f5e9; color: #2e7d32; }
+  .verdict-neutral { background: #fff8e1; color: #f57f17; }
+  /* Levels */
+  .levels-box { display: flex; gap: 12px; margin-top: 8px; }
+  .level-item { flex: 1; padding: 8px 12px; border-radius: 6px; font-size: 13px; }
+  .level-support { background: #e8f5e9; border-left: 3px solid #27ae60; }
+  .level-resistance { background: #ffebee; border-left: 3px solid #e74c3c; }
+  .level-item .label { font-size: 11px; color: #999; }
+  .level-item .price { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  /* Footer */
+  .footer { text-align: center; padding: 16px; color: #999; font-size: 12px; }
+  /* Chart container */
+  .chart-box { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  #perfChart { width: 100%; height: 360px; }
+  /* Disclaimer */
+  .disclaimer { background: #fff3cd; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 12px; color: #856404; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>每日收盘量化分析报告</h1>
+    <div class="subtitle">2026年7月31日（周五）| A股收盘复盘 | 7标的深度分析</div>
+    <div class="market-bar">
+      <div class="market-item"><span class="label">上证指数 </span><span class="value up-color">3832.26 (+0.72%)</span></div>
+      <div class="market-item"><span class="label">深证成指 </span><span class="value up-color">13578.93 (+2.21%)</span></div>
+      <div class="market-item"><span class="label">创业板指 </span><span class="value up-color">3343.96 (+3.06%)</span></div>
+      <div class="market-item"><span class="label">两市成交 </span><span class="value">2.54万亿</span></div>
+      <div class="market-item"><span class="label">涨跌家数 </span><span class="value up-color">4685涨 / 727跌</span></div>
+    </div>
+  </div>
+
+  <!-- Summary Card -->
+  <div class="summary-card">
+    <h2>7标的收盘总览</h2>
+    <div class="summary-grid">
+      <div class="summary-item"><div class="name">科创半导体ETF华夏</div><div class="pct up-color">+2.45%</div><div class="price">0.920</div></div>
+      <div class="summary-item"><div class="name">科创50ETF华夏</div><div class="pct up-color">+3.54%</div><div class="price">1.728</div></div>
+      <div class="summary-item"><div class="name">半导体设备ETF国泰</div><div class="pct up-color">+3.08%</div><div class="price">0.670</div></div>
+      <div class="summary-item"><div class="name">多氟多</div><div class="pct up-color">+2.88%</div><div class="price">31.44</div></div>
+      <div class="summary-item"><div class="name">隆基绿能</div><div class="pct down-color">-0.23%</div><div class="price">12.99</div></div>
+      <div class="summary-item"><div class="name">药明康德</div><div class="pct up-color">+2.35%</div><div class="price">128.43</div></div>
+      <div class="summary-item"><div class="name">比亚迪</div><div class="pct down-color">-0.07%</div><div class="price">95.77</div></div>
+    </div>
+  </div>
+
+  <!-- Performance Chart -->
+  <div class="chart-box">
+    <div id="perfChart"></div>
+  </div>
+
+  <!-- Stock 1: 588170 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">ETF</span>
+      <h3>科创半导体ETF华夏</h3>
+      <span class="code">588170.SH</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>跟踪上证科创板半导体材料设备主题指数，聚焦科创板中半导体设备（59%）和半导体材料（25%）细分领域的硬科技公司。重仓股包括华海清科、中微公司、中科飞测、拓荆科技、华峰测控等。该ETF于2025年3月成立，成立以来回报170%+，但7月经历深度回调，7月1日至7月30日跌幅超35%。当日产业催化：隔夜美股、韩国半导体市场暴力反弹，美光、泛兰林、SK海力士单日涨幅超16%；亚马逊上调全年AI资本开支至2200亿美元；SK海力士董事长亲自增持。全球AI算力扩张周期未结束，HBM存储芯片供需缺口持续扩大，直接提振国内芯片板块情绪。基金最新规模376.82亿元。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>0.920</b></td><td>涨跌幅</td><td class="up-color"><b>+2.45%</b></td></tr>
+        <tr><td>前收</td><td>0.898</td><td>振幅</td><td><b>10.69%</b></td></tr>
+        <tr><td>开盘</td><td>1.000 (+11.36%)</td><td>最高</td><td>1.016</td></tr>
+        <tr><td>最低</td><td>0.920</td><td>成交额</td><td><b>136.2亿元</b></td></tr>
+        <tr><td>主力资金净流入</td><td class="down-color"><b>-6.83亿元</b></td><td>MACD</td><td>DIF=-0.039 / DEA=-0.011 / MACD=-0.055</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-bear">出货特征显著</span></p>
+      <p>该ETF今日呈现典型的"冲高出货"形态。早盘高开11.36%至1.000元，盘中最高触及1.016元（+13.14%），但随后全天持续走低，收盘仅报0.920元（+2.45%），回吐早盘涨幅超80%。主力资金净流出6.83亿元，与早盘的大幅拉升形成鲜明对比，表明早盘拉升系诱多出货。从分钟数据看，上午成交额超100亿（占全天73%），午后缩量下跌，散户高位追入后被套。该ETF7月已累计回调超35%，今日反弹中出现资金借反弹出货的信号，短线抛压较重。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">0.898</div><div style="font-size:11px;color:#999;">前收/跳空缺口下沿</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">1.000</div><div style="font-size:11px;color:#999;">今日开盘/心理关口</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：偏空震荡。</b> 今日长上影线+主力净流出6.83亿，显示上方抛压沉重。0.920-1.000区间形成密集套牢盘，反弹空间受限。若次日低开跌破0.898前收，则可能回测前期低点；短线建议观望，不追高。</p>
+    </div>
+  </div>
+
+  <!-- Stock 2: 588000 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">ETF</span>
+      <h3>科创50ETF华夏</h3>
+      <span class="code">588000.SH</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>跟踪上证科创板50指数，是科创板最具代表性的宽基ETF，覆盖科创板市值最大、流动性最好的50只个股。重仓股包括中芯国际、海光信息、中微公司、晶科能源等硬科技龙头。基金规模约931亿元，是两市最大的科创宽基ETF。当日科创板在半导体板块带动下强势反弹，创业板指涨3.06%，科创50成分股大面积上涨。7月该ETF连续4个交易日成交额突破百亿，显示资金持续抄底意愿强烈。7月申赎净流入446.81亿元，为资金净流入最多的宽基ETF。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>1.728</b></td><td>涨跌幅</td><td class="up-color"><b>+3.54%</b></td></tr>
+        <tr><td>前收</td><td>1.669</td><td>振幅</td><td><b>6.17%</b></td></tr>
+        <tr><td>开盘</td><td>1.789</td><td>最高</td><td>1.827</td></tr>
+        <tr><td>最低</td><td>1.724</td><td>成交额</td><td><b>154.7亿元</b></td></tr>
+        <tr><td>换手率</td><td>16.11%</td><td>量比</td><td>1.39</td></tr>
+        <tr><td>主力资金净流入</td><td class="up-color"><b>+18.44亿元</b></td><td>MACD</td><td>DIF=-0.072 / DEA=-0.034 / MACD=-0.077</td></tr>
+        <tr><td>BOLL上轨/中轨/下轨</td><td>2.314 / 1.968 / 1.622</td><td>52周高/低</td><td>2.39 / 1.082</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-bull">吸筹特征显著</span></p>
+      <p>主力资金大幅净流入18.44亿元（主力流入127.5亿 vs 流出109.06亿），在7只标的中资金面最强。成交额154.7亿元连续4日破百亿，换手率16.11%处于高位，显示多空交锋激烈但买方占优。价格收于1.728，高于前收1.669，且最低1.724未跌破前收，表明底部有支撑。但MACD仍处空头排列（DIF和DEA均为负），且收盘价低于BOLL中轨（1.968），短期趋势尚未完全转多。综合判断：资金在底部区域积极吸筹，但上方套牢盘沉重，反弹不会一蹴而就。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">1.669</div><div style="font-size:11px;color:#999;">前收/BOLL下轨上方</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">1.827</div><div style="font-size:11px;color:#999;">今日高点/BOLL中轨下方</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：震荡偏多。</b> 主力资金大幅流入+成交维持高位，底部支撑确立。但BOLL中轨1.968附近压力较大，MACD空头未反转。预计在1.669-1.827区间震荡整理，若能站稳1.789（今日开盘价），则有进一步上攻动能。</p>
+    </div>
+  </div>
+
+  <!-- Stock 3: 159516 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">ETF</span>
+      <h3>半导体设备ETF国泰</h3>
+      <span class="code">159516.SZ</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>跟踪中证半导体材料设备主题指数，选取40只业务涉及半导体材料和半导体设备等领域的A股上市公司作为样本。重仓股包括中微公司（15.1%）、北方华创（13.3%）、长川科技（6.5%）、拓荆科技（6.4%）、华海清科（5.5%）等。基金规模381.06亿元，今年以来份额增长896%、规模增长323%。当日催化：半导体板块全线反弹，芯原股份、盛科通信等涨超10%；连续4个交易日资金净流入，近5日吸金超30亿元，近30日净流入达200.33亿元。存储芯片涨价周期延续至2027年，三星Q2净利润同比暴涨近13倍。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>0.670</b></td><td>涨跌幅</td><td class="up-color"><b>+3.08%</b></td></tr>
+        <tr><td>前收</td><td>0.650</td><td>振幅</td><td><b>6.92%</b></td></tr>
+        <tr><td>开盘</td><td>0.715 (+10.0%)</td><td>最高</td><td>0.715</td></tr>
+        <tr><td>最低</td><td>0.670</td><td>成交额</td><td><b>75.0亿元</b></td></tr>
+        <tr><td>主力资金净流入</td><td class="up-color"><b>+4.19亿元</b></td><td>超大单净流入</td><td class="up-color">+8.84亿元</td></tr>
+        <tr><td>大单净流入</td><td class="down-color">-4.66亿元</td><td>MACD</td><td>DIF=-0.027 / DEA=-0.009 / MACD=-0.036</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-neutral">分化博弈 — 超大单吸筹 vs 大单出货</span></p>
+      <p>资金面呈现显著分化：超大单净流入8.84亿元（主力吸筹），但大单净流出4.66亿元（短线获利了结），合计主力净流入4.19亿元。ETF开盘即涨停（+10%至0.715），随后全天单边回落至0.670收盘（+3.08%），回吐早盘涨幅近70%。与588170类似，呈现冲高回落形态，但差异在于超大单逆势加仓，表明机构资金在低位持续吸筹。连续4日资金净流入+近30日吸金200亿的趋势未改，长线资金看好态度明确，但短线面临获利盘抛压。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">0.650</div><div style="font-size:11px;color:#999;">前收/跳空缺口下沿</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">0.715</div><div style="font-size:11px;color:#999;">今日开盘/最高/涨停价</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：震荡整理。</b> 开盘涨停后回落，0.670-0.715区间形成新的震荡中枢。超大单持续流入提供底部支撑，但大单流出+MACD空头排列限制上行空间。若0.650前收不破则底部确立，有望在震荡后蓄势再攻0.715；跌破0.650则可能二次探底。</p>
+    </div>
+  </div>
+
+  <!-- Stock 4: 002407 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">个股</span>
+      <h3>多氟多</h3>
+      <span class="code">002407.SZ</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>核心主业为氟化工新材料，六氟磷酸锂（LiPF6）龙头，同时布局电子化学品、固态电池电解质等新能源材料。所属板块：基础化工、氟化工、锂电池、半导体、比亚迪概念。总市值374.27亿元，流通市值339.16亿元。当日所属基础化工板块涨0.62%，化学制品板块涨0.23%，板块表现平淡。但公司同时涉及半导体（+6.02%）和比亚迪概念（+4.97%）板块，受益于当日半导体板块大幅反弹和新能源汽车产业链回暖。PE(TTM) 71.48倍，PB 4.38倍，估值偏高反映市场对其新材料转型的成长预期。20日涨跌幅-36.28%，7月深度回调后迎来反弹。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>31.44</b></td><td>涨跌幅</td><td class="up-color"><b>+2.88%</b></td></tr>
+        <tr><td>前收</td><td>30.56</td><td>振幅</td><td><b>5.50%</b></td></tr>
+        <tr><td>开盘</td><td>31.80</td><td>最高</td><td>32.88</td></tr>
+        <tr><td>最低</td><td>31.20</td><td>成交额</td><td><b>50.64亿元</b></td></tr>
+        <tr><td>换手率</td><td>14.69%</td><td>量比</td><td>0.78</td></tr>
+        <tr><td>主力资金净流入</td><td class="up-color"><b>+9106.88万元</b></td><td>超大单净流入</td><td class="up-color">+1.18亿元</td></tr>
+        <tr><td>BOLL上轨/中轨/下轨</td><td>45.91 / 34.949 / 23.988</td><td>MACD</td><td>DIF=-2.518 / DEA=-2.31 / MACD=-0.417</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-bull">低位吸筹特征</span></p>
+      <p>主力资金净流入9106.88万元，其中超大单净流入1.18亿元，大单小幅流出2686万元。换手率14.69%处于较高水平，成交额50.64亿元放量，表明底部区域多空博弈激烈。20日跌幅-36.28%后出现放量反弹+主力净流入，符合"低位放量+大单净流入"的吸筹特征。价格收于31.44，高于前收30.56，且最低31.20未跌破前收，底部支撑有效。但MACD仍处深度空头排列（DIF=-2.518远低于0），且收盘价低于BOLL下轨（23.988）上方但远低于中轨（34.949），中期趋势仍弱。综合判断：资金在底部区域开始吸筹，但反转尚需确认。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">30.56</div><div style="font-size:11px;color:#999;">前收/今日低点附近</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">32.88</div><div style="font-size:11px;color:#999;">今日高点/前高密集区</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：震荡偏多。</b> 放量反弹+主力净流入+超大单加仓，底部信号初现。30.56前收构成短线支撑，32.88为关键压力。若能站稳31.44并放量突破32.88，则反弹有望延续；若缩量回落至30.56以下，则底部尚未成立。量比0.78低于1，短线追涨动能不足，以震荡筑底为主。</p>
+    </div>
+  </div>
+
+  <!-- Stock 5: 601012 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">个股</span>
+      <h3>隆基绿能</h3>
+      <span class="code">601012.SH</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>全球最大单晶硅片制造商及光伏组件龙头，业务覆盖硅片、电池、组件全产业链。总市值984.39亿元。所属光伏设备板块当日表现一般，未进入涨幅榜前列。公司PE(TTM)为负（-14.25），反映行业处于亏损周期。PB 1.95倍，处于历史低位。52周最高23.57元，最低11.41元，当前12.99元距52周低点仅14%空间，距高点跌超44%。chg_ytd -28.63%，今年以来表现疲弱。光伏行业产能过剩、价格内卷持续，基本面缺乏明确催化。但近5日涨4.59%、近10日涨10.55%，有企稳迹象。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>12.99</b></td><td>涨跌幅</td><td class="down-color"><b>-0.23%</b></td></tr>
+        <tr><td>前收</td><td>13.02</td><td>振幅</td><td><b>1.84%</b></td></tr>
+        <tr><td>开盘</td><td>12.88</td><td>最高</td><td>13.09</td></tr>
+        <tr><td>最低</td><td>12.85</td><td>成交额</td><td><b>12.27亿元</b></td></tr>
+        <tr><td>换手率</td><td>1.25%</td><td>量比</td><td>0.83</td></tr>
+        <tr><td>主力资金净流入</td><td class="down-color"><b>-3242.37万元</b></td><td>大单(Jumbo)净流入</td><td class="down-color">-2204.72万元</td></tr>
+        <tr><td>BOLL上轨/中轨/下轨</td><td>13.145 / 12.254 / 11.362</td><td>MACD</td><td>DIF=-0.028 / DEA=-0.207 / MACD=+0.359</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-neutral">洗盘特征 — 缩量回调+大单小幅流出</span></p>
+      <p>主力资金净流出3242万元，大单净流出2205万元，但幅度均较小。换手率仅1.25%，成交额12.27亿元缩量明显（量比0.83低于1），符合"缩量回调+大单小幅流出"的洗盘特征。价格微跌0.23%，振幅仅1.84%，波动极小，显示市场交投清淡。值得注意的是MACD出现金叉迹象：DIF(-0.028)上穿DEA(-0.207)，MACD柱+0.359转正，技术面有转强信号。价格收于BOLL中轨（12.254）上方、接近上轨（13.145），处于BOLL中上轨区间。近5日涨4.59%、近10日涨10.55%，短期趋势在改善中。综合判断：缩量回调中的洗盘行为，技术面悄然转多，但资金面仍偏谨慎。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">12.85</div><div style="font-size:11px;color:#999;">今日最低/BOLL中轨上方</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">13.145</div><div style="font-size:11px;color:#999;">BOLL上轨</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：震荡偏多。</b> MACD金叉+BOLL中轨上方运行，技术面偏多。但量能不足（量比0.83）+资金净流出制约反弹力度。12.85-13.145窄幅震荡概率大。若放量突破13.145上轨，则打开上行空间；缩量回踩12.85不破则为加仓机会。光伏行业基本面未见拐点，反弹力度有限。</p>
+    </div>
+  </div>
+
+  <!-- Stock 6: 603259 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">个股</span>
+      <h3>药明康德</h3>
+      <span class="code">603259.SH</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>全球领先的医药研发外包（CXO）龙头，主营业务涵盖小分子化学药发现、研发及生产全产业链服务。收入构成：化学业务80.22%、测试业务8.89%、生物学业务5.89%。总市值3832亿元，流通市值3176亿元。所属申万行业为医药生物-医疗服务-医疗研发外包。当日医药生物板块走强，爱尔眼科涨8.32%、恒瑞医药涨5.53%，行业资金流入榜中药明康德以2.24亿元主力流入排名第二。2026Q1营收124.36亿元（同比+28.81%），归母净利46.52亿元（同比+26.68%），业绩增长强劲。chg_ytd +44.20%，是7只标的中唯一年内正收益且大幅上涨的标的。近60日涨17.07%，处于上升通道中。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>128.43</b></td><td>涨跌幅</td><td class="up-color"><b>+2.35%</b></td></tr>
+        <tr><td>前收</td><td>125.48</td><td>振幅</td><td><b>6.16%</b></td></tr>
+        <tr><td>开盘</td><td>123.00</td><td>最高</td><td>130.23</td></tr>
+        <tr><td>最低</td><td>122.50</td><td>成交额</td><td><b>72.86亿元</b></td></tr>
+        <tr><td>换手率</td><td>2.31%</td><td>量比</td><td>1.22</td></tr>
+        <tr><td>主力资金净流入</td><td class="up-color"><b>+8.90亿元</b></td><td>超大单净流入</td><td class="up-color">+6.79亿元</td></tr>
+        <tr><td>BOLL上轨/中轨/下轨</td><td>131.827 / 124.115 / 116.402</td><td>MACD</td><td>DIF=3.421 / DEA=3.946 / MACD=-1.05</td></tr>
+        <tr><td>PE(TTM)/PE(Forward)</td><td>19.04 / 20.60</td><td>PB</td><td>4.82</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-bull">吸筹+护盘特征</span></p>
+      <p>主力资金大幅净流入8.90亿元，其中超大单净流入6.79亿元、大单净流入2.11亿元，资金面在7只标中最强。开盘低开至123.00（-1.98%），盘中最低122.50，但随后强力拉升，最高触及130.23，收盘128.43（+2.35%），走出V型反转。这种"低开探底后尾盘拉升+大单净流入"的形态，符合"护盘"特征。成交额72.86亿元放量（量比1.22），换手率2.31%温和。价格收于BOLL中轨（124.115）上方、接近上轨（131.827），处于BOLL中上轨偏强区域。MACD方面DIF(3.421)虽低于DEA(3.946)但两者均为正值，属于多头市场中的短线回调。综合判断：机构资金在回调中积极吸筹+护盘，中期上升趋势未改。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">124.115</div><div style="font-size:11px;color:#999;">BOLL中轨/前收附近</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">131.827</div><div style="font-size:11px;color:#999;">BOLL上轨/接近52周高135.17</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：偏多。</b> V型反转+主力8.9亿净流入+超大单6.8亿加仓，多头信号明确。124.115中轨支撑强劲，上攻131.827上轨概率较大。若突破上轨，则有望挑战52周高点135.17。基本面Q1业绩强劲（营收+28.8%、净利+26.7%），估值PE 19倍合理，中期上行趋势未改。风险点：MACD尚未金叉，短线可能在中轨上方震荡蓄势后再攻。</p>
+    </div>
+  </div>
+
+  <!-- Stock 7: 002594 -->
+  <div class="stock-section">
+    <div class="stock-title">
+      <span class="badge">个股</span>
+      <h3>比亚迪</h3>
+      <span class="code">002594.SZ</span>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块1：概况与板块定位</div>
+      <p>全球新能源汽车龙头+动力电池龙头，业务涵盖新能源汽车、电池、半导体（比亚迪半导体）等。总市值8731.54亿元，流通市值3339.13亿元。所属新能源汽车、锂电池、半导体等板块。当日新能源汽车板块涨4.35%、锂电池板块涨2.97%、半导体板块涨6.02%，公司多板块共振受益。但比亚迪本身微跌0.07%，明显跑输所属板块，表现偏弱。PE(TTM) 31.7倍，PE(Forward) 53.44倍（远期PE偏高反映市场对盈利增速放缓的预期），PB 3.82倍。chg_ytd -1.64%，chg_60d -4.33%，近月走势疲弱。52周高116.23，低77.24，当前95.77处于中间偏下位置。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块2：终场收盘量化数据</div>
+      <table class="data-table">
+        <tr><th>指标</th><th>数值</th><th>指标</th><th>数值</th></tr>
+        <tr><td>收盘价</td><td><b>95.77</b></td><td>涨跌幅</td><td class="down-color"><b>-0.07%</b></td></tr>
+        <tr><td>前收</td><td>95.84</td><td>振幅</td><td><b>2.85%</b></td></tr>
+        <tr><td>开盘</td><td>93.72</td><td>最高</td><td>95.86</td></tr>
+        <tr><td>最低</td><td>93.13</td><td>成交额</td><td><b>41.40亿元</b></td></tr>
+        <tr><td>换手率</td><td>1.25%</td><td>量比</td><td>1.17</td></tr>
+        <tr><td>主力资金净流入</td><td class="down-color"><b>-1.05亿元</b></td><td>超大单净流入</td><td class="down-color">-1.58亿元</td></tr>
+        <tr><td>BOLL上轨/中轨/下轨</td><td>97.668 / 91.595 / 85.522</td><td>MACD</td><td>DIF=1.696 / DEA=1.134 / MACD=+1.124</td></tr>
+      </table>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块3：资金意愿与主力博弈解读</div>
+      <p><span class="verdict verdict-neutral">洗盘特征 — 低开反弹+超大单流出</span></p>
+      <p>主力资金净流出1.05亿元，其中超大单净流出1.58亿元，但大单净流入5307万元，资金面存在分歧。开盘低开至93.72（-2.21%），最低93.13，但午后反弹至95.86最高，收于95.77基本平盘（-0.07%）。走出低开高走的V型走势，但收盘未能翻红。超大单流出+大单流入的组合，可能反映部分机构在减仓的同时另一部分在承接。技术面MACD多头排列（DIF>DEA>0，MACD>0），价格在BOLL中轨（91.595）上方、接近上轨（97.668），技术面偏多。但价格明显跑输新能源汽车板块（+4.35%），相对弱势突出。综合判断：技术面多头但资金面偏空，板块大涨中比亚迪滞涨，可能有基本面隐忧或机构调仓行为。</p>
+    </div>
+
+    <div class="module">
+      <div class="module-title">模块4：次日趋势预判与关键价格位</div>
+      <div class="levels-box">
+        <div class="level-item level-support"><div class="label">核心支撑位</div><div class="price">93.13</div><div style="font-size:11px;color:#999;">今日最低/BOLL中轨上方</div></div>
+        <div class="level-item level-resistance"><div class="label">核心压力位</div><div class="price">97.668</div><div style="font-size:11px;color:#999;">BOLL上轨</div></div>
+      </div>
+      <p style="margin-top:8px;"><b>次日预判：震荡偏多但需警惕。</b> MACD多头+BOLL中上轨运行，技术面偏多。但超大单持续流出+板块大涨中滞涨，暗示主力可能在逢高减仓。93.13今日低点为短线支撑，97.668 BOLL上轨为关键压力。若放量突破上轨则打开上行空间；若跌破93.13则可能回测BOLL中轨91.595。建议关注后续资金流向变化，若超大单转为净流入则做多信号确认。</p>
+    </div>
+  </div>
+
+  <!-- Overall Sentiment -->
+  <div class="summary-card">
+    <h2>今日整体市场情绪小结</h2>
+    <table class="data-table">
+      <tr><th>标的</th><th>涨跌幅</th><th>主力资金</th><th>资金判断</th><th>次日预判</th></tr>
+      <tr><td>588170 科创半导体ETF华夏</td><td class="up-color">+2.45%</td><td class="down-color">-6.83亿</td><td>出货</td><td><span class="verdict verdict-bear">偏空</span></td></tr>
+      <tr><td>588000 科创50ETF华夏</td><td class="up-color">+3.54%</td><td class="up-color">+18.44亿</td><td>吸筹</td><td><span class="verdict verdict-bull">偏多</span></td></tr>
+      <tr><td>159516 半导体设备ETF国泰</td><td class="up-color">+3.08%</td><td class="up-color">+4.19亿</td><td>分化</td><td><span class="verdict verdict-neutral">震荡</span></td></tr>
+      <tr><td>002407 多氟多</td><td class="up-color">+2.88%</td><td class="up-color">+0.91亿</td><td>吸筹</td><td><span class="verdict verdict-bull">偏多</span></td></tr>
+      <tr><td>601012 隆基绿能</td><td class="down-color">-0.23%</td><td class="down-color">-0.32亿</td><td>洗盘</td><td><span class="verdict verdict-bull">偏多</span></td></tr>
+      <tr><td>603259 药明康德</td><td class="up-color">+2.35%</td><td class="up-color">+8.90亿</td><td>吸筹+护盘</td><td><span class="verdict verdict-bull">偏多</span></td></tr>
+      <tr><td>002594 比亚迪</td><td class="down-color">-0.07%</td><td class="down-color">-1.05亿</td><td>洗盘</td><td><span class="verdict verdict-neutral">震荡</span></td></tr>
+    </table>
+    <p style="margin-top:12px; font-size:14px; color:#444;">
+      <b>情绪总结：</b>7只标的中 <span class="up-color"><b>5涨2跌</b></span>，偏多预判 <b>3只</b>（科创50ETF、多氟多、药明康德），偏空预判 <b>1只</b>（科创半导体ETF），震荡预判 <b>3只</b>（半导体设备ETF、隆基绿能、比亚迪）。整体市场情绪<b>偏多但分化明显</b>：半导体板块冲高回落，ETF出现"开盘涨停→全天回落"的出货特征，短线需警惕追高风险；药明康德V型反转+大资金流入为最强多头信号；隆基绿能缩量回调中技术面悄然转多但基本面缺乏催化。两市成交2.54万亿放量，近4700股上涨，市场风险偏好回暖，但结构性分化加剧。
+    </p>
+  </div>
+
+  <div class="disclaimer">
+    数据来源：腾讯自选股（westock-data）、NeoData金融搜索、新浪财经、证券时报等公开渠道 | 数据时点：2026-07-31收盘 | 本报告仅供研究参考，不构成投资建议
+  </div>
+
+  <div class="footer">
+    每日收盘量化分析 | 自动生成于 2026-07-31 15:30
+  </div>
+
+</div>
+
+<script>
+var chart = echarts.init(document.getElementById('perfChart'));
+chart.setOption({
+  title: { text: '7标的涨跌幅与主力资金流向对比', left: 'center', textStyle: { fontSize: 15, fontWeight: 700, color: '#333' } },
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+  legend: { data: ['涨跌幅(%)', '主力资金净流入(亿元)'], bottom: 5 },
+  grid: { left: '8%', right: '8%', top: '18%', bottom: '15%' },
+  xAxis: {
+    type: 'category',
+    data: ['科创半导体\nETF华夏', '科创50\nETF华夏', '半导体设备\nETF国泰', '多氟多', '隆基绿能', '药明康德', '比亚迪'],
+    axisLabel: { fontSize: 11, interval: 0 }
+  },
+  yAxis: [
+    { type: 'value', name: '涨跌幅(%)', axisLabel: { formatter: '{value}%' } },
+    { type: 'value', name: '资金(亿元)', axisLabel: { formatter: '{value}' } }
+  ],
+  series: [
+    {
+      name: '涨跌幅(%)',
+      type: 'bar',
+      data: [
+        { value: 2.45, itemStyle: { color: '#e74c3c' } },
+        { value: 3.54, itemStyle: { color: '#e74c3c' } },
+        { value: 3.08, itemStyle: { color: '#e74c3c' } },
+        { value: 2.88, itemStyle: { color: '#e74c3c' } },
+        { value: -0.23, itemStyle: { color: '#27ae60' } },
+        { value: 2.35, itemStyle: { color: '#e74c3c' } },
+        { value: -0.07, itemStyle: { color: '#27ae60' } }
+      ],
+      barWidth: '30%'
+    },
+    {
+      name: '主力资金净流入(亿元)',
+      type: 'bar',
+      yAxisIndex: 1,
+      data: [
+        { value: -6.83, itemStyle: { color: '#27ae60' } },
+        { value: 18.44, itemStyle: { color: '#e74c3c' } },
+        { value: 4.19, itemStyle: { color: '#e74c3c' } },
+        { value: 0.91, itemStyle: { color: '#e74c3c' } },
+        { value: -0.32, itemStyle: { color: '#27ae60' } },
+        { value: 8.90, itemStyle: { color: '#e74c3c' } },
+        { value: -1.05, itemStyle: { color: '#27ae60' } }
+      ],
+      barWidth: '30%'
+    }
+  ]
+});
+window.addEventListener('resize', function() { chart.resize(); });
+</script>
+</body>
+</html>
