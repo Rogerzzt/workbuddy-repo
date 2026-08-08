@@ -34,6 +34,12 @@ def main():
                     help="目标 watchlist.json 路径（默认当前项目根，调用方可覆盖为相对路径）")
     args = ap.parse_args()
 
+    # 相对路径防御：--watchlist 若非绝对路径，统一按项目根（本脚本上级目录）解析，
+    # 不依赖调用方当前工作目录（CWD），避免 CWD 漂移导致写错位置。
+    if not os.path.isabs(args.watchlist):
+        _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        args.watchlist = os.path.join(_root, args.watchlist)
+
     # 1. 读取 AI 选出的新标的并校验
     with open(args.picks, encoding="utf-8") as f:
         new_picks = json.load(f)
