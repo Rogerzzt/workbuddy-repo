@@ -13,15 +13,50 @@
       --watchlist watchlist.json
 
 合并逻辑：
-  1. 兼容清洗：旧数据缺 source 字段 -> 补打 manual（向后兼容无损升级）
-  2. 剥离上周 auto 标的（etfs/stocks 均处理），只保留 manual
-  3. 新标的默认 type=个股、source=auto，追加到 stocks 段末尾
-  4. 写回，保留 version / updated / description 等元字段
+  1. 板块硬门禁：拒绝创业板标的（见 BLOCKED_BOARDS），违规直接报错退出，不写文件
+  2. 兼容清洗：旧数据缺 source 字段 -> 补打 manual（向后兼容无损升级）
+  3. 剥离上周 auto 标的（etfs/stocks 均处理），只保留 manual
+  4. 新标的默认 type=个股、source=auto，追加到 stocks 段末尾
+  5. 写回，保留 version / updated / description 等元字段
 """
 import json
 import os
+import sys
 import argparse
 from datetime import date
+
+# ============================================================
+# 硬性约束：自动轮换标的（source=auto）禁止入选的板块
+# ------------------------------------------------------------
+# 2026-08-10 用户指令固化：每周自动更新的标的不能是创业板。
+# 创业板代码段：300xxx（2009 起）、301xxx（2021 注册制后新增）。
+# 本门禁只作用于 --picks 传入的自动标的；手动置顶（source=manual）
+# 不受限制，用户想手动放创业板依然可以。
+# 如需扩充（例如再禁科创板 688/689、北交所 8xx/43x/83x/87x/920），
+# 在下面字典追加前缀即可，无需改动其他逻辑。
+# ============================================================
+BLOCKED_BOARDS = {
+    "创业板": ("300", "301"),
+}
+
+
+def assert_board_allowed(picks):
+    """校验自动选股结果，命中禁入板块则直接终止（硬约束，不静默过滤）。"""
+    violations = []
+    for it in picks:
+        code = str(it.get("code", "")).strip()
+        for board, prefixes in BLOCKED_BOARDS.items():
+            if code.startswith(prefixes):
+                violations.append((code, it.get("name", "?"), board))
+    if violations:
+        lines = [f"  ✗ {c} {n} → 属于{b}，禁止作为自动轮换标的"
+                 for c, n, b in violations]
+        raise ValueError(
+            "板块硬门禁拦截，watchlist 未做任何修改：\n"
+            + "\n".join(lines)
+            + "\n\n请回到选股步骤，改选非创业板标的（沪市主板 600/601/603/605、"
+              "深市主板 000/001/002/003）后重新执行本脚本。"
+        )
 
 
 def main():
@@ -51,6 +86,13 @@ def main():
             raise ValueError(f"金股缺少必填字段 {missing}：{it}")
         it["source"] = "auto"
         it.setdefault("type", "个股")
+
+    # 1b. 板块硬门禁（创业板等禁入板块）——放在任何写操作之前，违规即终止
+    try:
+        assert_board_allowed(new_picks)
+    except ValueError as e:
+        print(f"❌ {e}", file=sys.stderr)
+        sys.exit(2)
 
     # 2. 读取现有 watchlist（不存在则初始化结构）
     if os.path.exists(args.watchlist):

@@ -1,5 +1,5 @@
 {
-    "version": 4,
+    "version": 5,
     "updated": "2026-08-10",
     "description": "量化数据采集系统标的清单（按截图标红更新，已移除返利科技）。任务每次执行时读取本文件并逐项采集；变更清单只需修改此文件，无需改动任务代码。2026-08-08 起升级：每项新增 source 字段（manual=手动固定 / auto=周日任务自动轮换），旧数据已自动补 manual 标签，爬虫与 aquant 不校验多余字段，向后兼容。",
     "etfs": [
@@ -66,16 +66,28 @@
             "source": "manual"
         },
         {
-            "code": "301366",
-            "name": "一博科技",
+            "code": "603011",
+            "name": "合锻智能",
+            "exchange": "SSE",
+            "source": "manual"
+        },
+        {
+            "code": "002714",
+            "name": "牧原股份",
+            "exchange": "SZSE",
+            "source": "manual"
+        },
+        {
+            "code": "000506",
+            "name": "招金黄金",
             "exchange": "SZSE",
             "source": "auto",
             "type": "个股"
         },
         {
-            "code": "300363",
-            "name": "博腾股份",
-            "exchange": "SZSE",
+            "code": "603127",
+            "name": "昭衍新药",
+            "exchange": "SSE",
             "source": "auto",
             "type": "个股"
         }
