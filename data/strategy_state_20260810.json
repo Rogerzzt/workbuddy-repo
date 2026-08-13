@@ -1,0 +1,222 @@
+{
+  "date": "2026-08-10",
+  "_source": "盘后量化分析自动化任务生成 (automation-1785424522347)。aquant 主源(em/东财)STALE，信号为腾讯自选股 technical(MA20)+kline(量能) 自算降级口径，已三源(交易所官网/东财/腾讯自选股)交叉验证，无编造。",
+  "_generated_at": "2026-08-10T16:10:00+08:00",
+  "aquant_signal_status": "STALE (数据缺失) — 主源 push2his.eastmoney.com 持续 SSLError，上游最新日线停在 2026-08-07，aquant 全部判定 STALE；本报告以腾讯自选股 technical(MA20)+kline(过去20日80分位量能) 自算等价信号替代。明日须以 aquant 恢复后数据校正。",
+  "triggered_tickers": [
+    {
+      "code": "603011",
+      "name": "合锻智能",
+      "bias": "偏多",
+      "support_levels": [19.52],
+      "resistance_levels": [24.84],
+      "stop_loss": 19.00,
+      "rationale": "A+B强信号：收盘23.95>MA20 19.524(偏离+22.7%)，量能1.53×20日80分位；主力+0.56亿。今日最高24.84为压力，MA20为动态支撑。"
+    },
+    {
+      "code": "603259",
+      "name": "药明康德",
+      "bias": "偏多",
+      "support_levels": [154.82],
+      "resistance_levels": [166.66],
+      "stop_loss": 155.00,
+      "rationale": "A+B强信号：收盘161.34>MA20 131.861(偏离+22.4%)，量能1.47×分位；但触及52周高166.66且主力净流出-2.31亿，短线派发压力。154.82为近日低点支撑。"
+    },
+    {
+      "code": "002407",
+      "name": "多氟多",
+      "bias": "偏多",
+      "support_levels": [32.46],
+      "resistance_levels": [39.85],
+      "stop_loss": 31.50,
+      "rationale": "A+B强信号：收盘38.51>MA20 32.461(偏离+18.6%)，量能1.20×分位；主力-0.58亿但价强。39.85为今日高点压力。"
+    },
+    {
+      "code": "603127",
+      "name": "昭衍新药",
+      "bias": "偏多",
+      "support_levels": [46.91],
+      "resistance_levels": [55.45],
+      "stop_loss": 46.00,
+      "rationale": "A+B强信号：收盘52.80>MA20 46.91(偏离+12.6%)，量能1.22×分位；主力-2.31亿。55.45为今日高点压力，MA20为动态支撑。"
+    },
+    {
+      "code": "000506",
+      "name": "招金黄金",
+      "bias": "偏多",
+      "support_levels": [13.82],
+      "resistance_levels": [19.94],
+      "stop_loss": 18.00,
+      "rationale": "A+B强信号但严重超买：收盘19.94>MA20 13.819(偏离+44.3%)，量能1.05×分位，今日涨停封板；融资明细T-1缺失。偏离极端，谨慎追高，18.00为止损参考。"
+    },
+    {
+      "code": "002714",
+      "name": "牧原股份",
+      "bias": "偏多",
+      "support_levels": [39.27],
+      "resistance_levels": [40.30],
+      "stop_loss": 38.50,
+      "rationale": "A+B强信号：收盘40.24>MA20 39.27(偏离+2.5%)，量能1.08×分位；主力-0.31亿。温和转强，40.30为今日高点压力。"
+    },
+    {
+      "code": "588170",
+      "name": "科创半导体ETF华夏",
+      "bias": "偏多",
+      "support_levels": [0.993],
+      "resistance_levels": [1.055],
+      "stop_loss": 0.975,
+      "rationale": "A-only：收盘1.049>MA20 0.993(偏离+5.6%)，量能0.66×分位未达；板块半导体-0.36%但结构强。1.055为今日高点压力。"
+    },
+    {
+      "code": "159516",
+      "name": "半导体设备ETF国泰",
+      "bias": "偏多",
+      "support_levels": [0.719],
+      "resistance_levels": [0.766],
+      "stop_loss": 0.705,
+      "rationale": "A-only：收盘0.762>MA20 0.719(偏离+6.0%)，量能0.68×分位；设备链结构强。0.766为今日高点压力。"
+    },
+    {
+      "code": "513130",
+      "name": "恒生科技ETF",
+      "bias": "偏多",
+      "support_levels": [0.596],
+      "resistance_levels": [0.62],
+      "stop_loss": 0.585,
+      "rationale": "A-only：收盘0.607>MA20 0.596(偏离+1.9%)，量能0.59×分位；弱站上。0.62为近期压力。"
+    },
+    {
+      "code": "560350",
+      "name": "中证A50ETF摩根",
+      "bias": "偏多",
+      "support_levels": [1.286],
+      "resistance_levels": [1.31],
+      "stop_loss": 1.275,
+      "rationale": "A-only：收盘1.302>MA20 1.286(偏离+1.2%)，量能0.54×分位；窄幅。1.31为近期压力。"
+    },
+    {
+      "code": "560390",
+      "name": "电网设备ETF易方达",
+      "bias": "偏多",
+      "support_levels": [0.854],
+      "resistance_levels": [0.901],
+      "stop_loss": 0.840,
+      "rationale": "A-only：收盘0.892>MA20 0.854(偏离+4.5%)，量能0.64×分位；今日平收量缩。0.901为今日高点压力。"
+    },
+    {
+      "code": "515880",
+      "name": "通信ETF国泰",
+      "bias": "偏空",
+      "support_levels": [0.628],
+      "resistance_levels": [0.665],
+      "rationale": "收盘0.644<MA20 0.654，通信设备板块-3.67%共振走弱，主力净流出-4.37亿；减仓。"
+    },
+    {
+      "code": "588000",
+      "name": "科创50ETF华夏",
+      "bias": "偏空",
+      "support_levels": [1.799],
+      "resistance_levels": [1.851],
+      "rationale": "收盘1.835<MA20 1.847，主力净流出-5.21亿(20日净流出-134.8亿)，大资金撤离科创50；回避。"
+    },
+    {
+      "code": "002594",
+      "name": "比亚迪",
+      "bias": "偏空",
+      "support_levels": [89.40],
+      "resistance_levels": [91.80],
+      "rationale": "收盘91.15<MA20 92.443，虽主力+1.79亿但5日净流出-25.6亿、业绩承压；技术偏弱。"
+    },
+    {
+      "code": "159813",
+      "name": "半导体ETF鹏华",
+      "bias": "观望",
+      "support_levels": [0.754],
+      "resistance_levels": [0.783],
+      "rationale": "收盘0.771<MA20 0.782，微破；板块半导体-0.36%，等待确认。"
+    }
+  ],
+  "support_levels": {
+    "603011": [19.52],
+    "603259": [154.82],
+    "002407": [32.46],
+    "603127": [46.91],
+    "000506": [13.82],
+    "002714": [39.27],
+    "588170": [0.993],
+    "159516": [0.719],
+    "513130": [0.596],
+    "560350": [1.286],
+    "560390": [0.854],
+    "515880": [0.628],
+    "588000": [1.799],
+    "002594": [89.40],
+    "159813": [0.754]
+  },
+  "resistance_levels": {
+    "603011": [24.84],
+    "603259": [166.66],
+    "002407": [39.85],
+    "603127": [55.45],
+    "000506": [19.94],
+    "002714": [40.30],
+    "588170": [1.055],
+    "159516": [0.766],
+    "513130": [0.62],
+    "560350": [1.31],
+    "560390": [0.901],
+    "515880": [0.665],
+    "588000": [1.851],
+    "002594": [91.80],
+    "159813": [0.783]
+  },
+  "market_context": {
+    "phase": "缩量普涨分化日 —— 沪强深弱、科创/创业微跌；贵金属+CRO+养殖三线领涨，成交2.52万亿缩量",
+    "sh_index": 3966.59,
+    "sh_change_pct": 0.67,
+    "sz_index": 14316.96,
+    "sz_change_pct": 0.04,
+    "cyb_index": 3537.21,
+    "cyb_change_pct": -0.73,
+    "k50_index": 1737.77,
+    "k50_change_pct": -0.36,
+    "advance_decline": "4068 涨 / 1391 跌 / 80 平（上涨占比73%，涨停103/跌停6）",
+    "turnover_yi": 25231.03,
+    "turnover_change_yi": -1413.17,
+    "margin_balance_yi": 26225.44,
+    "margin_net_buy_yi": 69.78,
+    "watchlist_main_net_flow_yi": -13.83,
+    "watchlist_a_triggered": 11,
+    "watchlist_ab_strong": 6
+  },
+  "review": {
+    "of_date": "2026-08-07",
+    "reviewed_on": "2026-08-10",
+    "method": "以今日(08-10)交易所官网真实高低点回溯 08-07 state 的支撑/压力/止损位（08-08/08-09为周末，下一交易日即08-10）",
+    "items": [
+      {"code": "603259", "bias": "偏多", "support": 142.2, "today_low": 157.93, "today_high": 166.66, "today_close": 161.34, "result": "守支撑(偏多成立)", "correct": true},
+      {"code": "588170", "bias": "偏多", "support": 0.964, "resistance": 1.016, "today_low": 1.009, "today_high": 1.055, "result": "守支撑且突破压力(偏多强化)", "correct": true},
+      {"code": "002594", "bias": "偏空", "support": 88.55, "today_low": 89.40, "today_high": 91.80, "today_close": 91.15, "result": "未破位反上涨(偏空失效)", "correct": false},
+      {"code": "513130", "bias": "偏多", "support": 0.595, "today_low": 0.604, "today_high": 0.611, "result": "守支撑(偏多成立)", "correct": true},
+      {"code": "159813", "bias": "观望", "support": 0.745, "today_low": 0.754, "today_high": 0.783, "result": "未破位窄幅(观望成立)", "correct": true}
+    ],
+    "win_rate": 0.8,
+    "win_count": 4,
+    "total": 5,
+    "note": "仅002594偏空失效（价格反向上行未破位）；其余4项信号均获验证。累计近两日复盘胜率均0.8。"
+  },
+  "aquant": {
+    "status": "STALE (数据缺失)",
+    "settled_date": "2026-08-07",
+    "source": "em/东财日线不可达，tx回退本次亦失败(上游停更)，aquant 全部 STALE",
+    "data_complete": false,
+    "note": "信号由腾讯自选股 technical(MA20)+kline(量能80分位) 自算替代，非 aquant 原始输出；明日须以 aquant 恢复数据校正。",
+    "self_computed": {
+      "condition_A_count": 11,
+      "condition_AB_strong_count": 6,
+      "condition_A_list": ["513130","560350","560390","588170","603011","603127","603259","000506","002407","002714","159516"],
+      "condition_B_list": ["603011","603127","603259","000506","002407","002714"],
+      "not_A_list": ["515880","588000","002594","159813"]
+    }
+  }
+}
