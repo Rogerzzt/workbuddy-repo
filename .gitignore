@@ -14,11 +14,19 @@ __pycache__/
 非农*.md
 收盘*.md
 收盘*.html
+周一宏观情绪雷达*.md
+周日热门调仓*.md
+*晨报*.md
+*晨报*.html
+*量化分析*.md
 
 # ===== 数据采集中间产物（爬虫/行情原始落盘） =====
 data/post/
 data/pre/
 data/intraday*.json
+_compute_signals_*.py
+_signals_*.json
+data/_signals_*.json
 
 # 注意：data/strategy_state_*.json 与 data/weekend_sentiment_*.json
 # 是状态机核心数据，保留纳入版本控制（不在忽略之列）。
