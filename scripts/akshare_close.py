@@ -15,8 +15,10 @@ akshare_close.py — 严格收盘价采集（AkShare 后端，东方财富历史
 """
 import argparse
 import json
+import os
 import sys
 import time
+import tempfile
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -25,6 +27,12 @@ try:
 except ImportError:
     sys.stderr.write("ERROR: akshare 未安装 -> …/python/envs/default/bin/pip install akshare\n")
     sys.exit(3)
+
+# 强制进程级时区为北京时间（消除宿主机 TZ 漂移；与 init_check.sh 基调一致）。
+# zoneinfo 本身与 TZ 无关，这里仅做全局兜底，确保任何依赖 time.localtime() 的代码也走北京时间。
+os.environ["TZ"] = "Asia/Shanghai"
+if os.name != "nt":
+    time.tzset()
 
 TZ_BJ = ZoneInfo("Asia/Shanghai")
 
@@ -49,11 +57,11 @@ def _strip_prefix(code: str) -> str:
     return code[2:] if code[:2].lower() in ("sh", "sz") else code
 
 
-def get_strict_close(symbol: str, is_etf: bool, retries: int = 2):
+def get_strict_close(symbol: str, is_etf: bool, retries: int = 3):
     """返回 {code, close, status, detail?}；close=None 时 status 说明原因。"""
     today = _beijing_now().strftime("%Y%m%d")
     last_err = None
-    for attempt in range(retries + 1):
+    for attempt in range(retries):
         try:
             if is_etf:
                 df = ak.fund_etf_hist_em(symbol=symbol, period="daily",
@@ -69,7 +77,8 @@ def get_strict_close(symbol: str, is_etf: bool, retries: int = 2):
             return {"code": symbol, "close": float(val), "status": "ok"}
         except Exception as e:                       # 网络/接口异常
             last_err = str(e)
-            time.sleep(0.5 * (attempt + 1))
+            # 指数退避：1.0 / 1.5 / 2.25 秒，封顶 6 秒，避免被东财反爬机制彻底封锁
+            time.sleep(min(1.5 ** attempt, 6))
     return {"code": symbol, "close": None, "status": "error", "detail": last_err[:200]}
 
 
@@ -82,6 +91,24 @@ def load_watchlist(path):
     for s in wl.get("stocks", []):
         items.append((_strip_prefix(s["code"]), False, s.get("name", "")))
     return items
+
+
+def _atomic_write_json(path, obj, *, indent=2):
+    """原子写 JSON：先落临时文件再 os.replace，避免写入中途进程被杀/断电清空白文件。"""
+    dir_name = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp", text=True)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(obj, f, ensure_ascii=False, indent=indent)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    except Exception:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def main():
@@ -109,8 +136,7 @@ def main():
         "fetched_at": _beijing_now().isoformat(),
         "items": results,
     }
-    with open(args.out, "w", encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, indent=2)
+    _atomic_write_json(args.out, out)
     ok = sum(1 for r in results if r["status"] == "ok")
     print(f"AKSHARE 严格收盘价：{ok}/{len(results)} 成功 -> {args.out}")
 

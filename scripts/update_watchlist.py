@@ -22,6 +22,7 @@
 import json
 import os
 import sys
+import tempfile
 import argparse
 from datetime import date
 
@@ -57,6 +58,28 @@ def assert_board_allowed(picks):
             + "\n\n请回到选股步骤，改选非创业板标的（沪市主板 600/601/603/605、"
               "深市主板 000/001/002/003）后重新执行本脚本。"
         )
+
+
+def _atomic_write_json(path, obj, *, indent=4):
+    """原子写 JSON：先落临时文件，再 os.replace 覆盖。
+
+    即使写入中途进程被杀/断电/磁盘打满，原 watchlist.json 也不会损坏——
+    os.replace 在同一文件系统上是原子操作（rename），不会有"半截文件"。
+    """
+    dir_name = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp", text=True)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(obj, f, ensure_ascii=False, indent=indent)
+            f.flush()
+            os.fsync(f.fileno())          # 强制刷盘，确保数据真正落盘再替换
+        os.replace(tmp_path, path)        # 原子替换
+    except Exception:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def main():
@@ -120,8 +143,7 @@ def main():
         "stocks": manual_stocks + new_picks,
     }
 
-    with open(args.watchlist, "w", encoding="utf-8") as f:
-        json.dump(final, f, ensure_ascii=False, indent=4)
+    _atomic_write_json(args.watchlist, final)
 
     print(f"Watchlist 更新成功！ETF: 手动{len(manual_etfs)}；"
           f"个股: 手动{len(manual_stocks)}+自动{len(new_picks)}")

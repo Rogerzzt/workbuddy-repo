@@ -7,6 +7,10 @@
 #
 set -euo pipefail
 
+# 强制时区为北京时间（影响后续所有 date 命令与子进程 Python 的默认时区，
+# 消除调度引擎宿主机 TZ 漂移；与 init_check.sh / run.sh 基调一致）
+export TZ="Asia/Shanghai"
+
 # 解析仓库根目录（scripts/ 的上级），避免硬编码绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
