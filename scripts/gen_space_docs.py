@@ -343,12 +343,27 @@ def page_shell(title, body):
     )
 
 
-def render_index(themes):
+def _docmap_url(docmap, key):
+    """从 doc map 取某页的访问 URL（无则返回空串）。"""
+    try:
+        return (docmap or {}).get("pages", {}).get(key, {}).get("url", "") or ""
+    except Exception:
+        return ""
+
+
+def _link(docmap, key, title):
+    u = _docmap_url(docmap, key)
+    if u:
+        return "<a href='%s'>%s</a>" % (esc(u), esc(title))
+    return esc(title)
+
+
+def render_index(themes, docmap=None):
     items = "".join(
-        "<li><span class='tag'>项目</span> <b>%s</b> — %s</li>" % (esc(p["title"]), esc(p["subtitle"]))
+        "<li><span class='tag'>项目</span> <b>%s</b> — %s</li>" % (_link(docmap, p["key"], p["title"]), esc(p["subtitle"]))
         for p in PROJECTS)
     tlist = "".join(
-        "<li><span class='tag'>主题</span> <b>%s</b> — 跨项目通用参考</li>" % esc(t["title"])
+        "<li><span class='tag'>主题</span> <b>%s</b> — 跨项目通用参考</li>" % _link(docmap, t["key"], t["title"])
         for t in themes)
     body = (
         "<p class='subtitle'>资料库·我的文档 / 股票项目文档中心</p>"
@@ -385,6 +400,17 @@ def main():
     db = load_autos()
     os.makedirs(BUILD, exist_ok=True)
 
+    # 读取文档节点映射（若存在），用于首页对各子页生成可点击链接。
+    # 首次建页时 map 尚未生成，本步静默跳过；后续周同步会自动补全链接。
+    _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _map_path = os.path.join(_root, "docs", "library_doc_map.json")
+    docmap = None
+    try:
+        with open(_map_path, "r", encoding="utf-8") as f:
+            docmap = json.load(f)
+    except Exception:
+        docmap = None
+
     # 主题页：自动化任务清单（汇总全部相关自动化，从 DB 动态注入）
     seen = set()
     all_ids = []
@@ -402,7 +428,7 @@ def main():
     # (文件名, 内容) 列表
     themes = [THEME_ARCH, THEME_CONFIG, theme_autos]
     pages = []
-    pages.append(("index.html", render_index(themes)))
+    pages.append(("index.html", render_index(themes, docmap)))
     for p in PROJECTS:
         pages.append((p["key"] + ".html", render_project(p, db)))
     for t in themes:
