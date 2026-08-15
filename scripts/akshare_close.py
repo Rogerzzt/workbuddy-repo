@@ -19,6 +19,7 @@ import os
 import sys
 import time
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -124,13 +125,19 @@ def main():
         sys.exit(4)
 
     items = load_watchlist(args.watchlist)
-    results = []
-    for code, is_etf, name in items:
+
+    def _worker(item):
+        code, is_etf, name = item
         r = get_strict_close(code, is_etf)
         r["name"] = name
         r["is_etf"] = is_etf
-        results.append(r)
-        time.sleep(0.4)                            # 节流，避免东财限流
+        time.sleep(0.4)                            # 单 worker 节流，避免东财限流
+        return r
+
+    # 并发抓取：max_workers=3 兼顾速度与东财接口限流（保留逐请求退避与 0.4s 间隔）。
+    # executor.map 保序，结果与原串行顺序一致；错误分型（ok/non_trading_day/no_data/error）不变。
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        results = list(ex.map(_worker, items))
     out = {
         "source": "akshare_eastmoney_hist",
         "fetched_at": _beijing_now().isoformat(),

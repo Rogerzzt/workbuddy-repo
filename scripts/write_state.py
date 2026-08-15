@@ -5,7 +5,7 @@
 # 背景：原先盘前/盘后任务要求 LLM 在终端内联写 Python 拼 JSON，trigger_condition
 #       等字段一旦含未转义引号即 SyntaxError/JSONDecodeError，切断闭环。
 # 用法（由 prompt 指示 LLM 调用）：
-#   1) LLM 用 Write 工具把【纯 JSON 文本】写入临时文件（禁止 ```json 代码围栏/Markdown）
+#   1) LLM 用 Write 工具把【纯 JSON 文本】写入临时文件（建议无围栏；即便带上 ```json 围栏本脚本也会自动剥离）
 #   2) 调用本脚本做校验 + 原子落盘：
 #      python3 scripts/write_state.py \
 #        --in  data/.tmp_pre_market_state_YYYYMMDD.json \
@@ -16,6 +16,7 @@
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
 
@@ -36,12 +37,20 @@ def main():
         print(f"❌ 无法读取输入文件 {args.infile}: {e}", file=sys.stderr)
         return 2
 
+    raw = raw.strip()
     try:
         data = json.loads(raw)
-    except json.JSONDecodeError as e:
-        print(f"❌ JSON 解析失败（{args.infile}）：{e}", file=sys.stderr)
-        print("   请检查 trigger_condition 等字段是否含未转义引号或 Markdown 代码围栏。", file=sys.stderr)
-        return 3
+    except json.JSONDecodeError:
+        # 防御性：LLM 极易在首尾带上 ```json ... ``` 围栏，自动剥离后重试一次
+        m = re.search(r"```(?:json)?\s*(.*?)\s*```", raw, re.DOTALL | re.IGNORECASE)
+        if m:
+            raw = m.group(1).strip()
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON 解析失败（{args.infile}）：{e}", file=sys.stderr)
+            print("   请检查 trigger_condition 等字段是否含未转义引号或 Markdown 代码围栏。", file=sys.stderr)
+            return 3
 
     if not isinstance(data, dict):
         print("❌ 顶层必须是 JSON 对象（dict）", file=sys.stderr)
