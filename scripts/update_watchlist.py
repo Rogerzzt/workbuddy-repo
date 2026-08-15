@@ -18,6 +18,11 @@
   3. 剥离上周 auto 标的（etfs/stocks 均处理），只保留 manual
   4. 新标的默认 type=个股、source=auto，追加到 stocks 段末尾
   5. 写回，保留 version / updated / description 等元字段
+
+降级哨兵（Phase 3 D5 死人开关）：
+  - 板块硬门禁拦截（exit 2）或本周无合格自动标的（picks==[]）时，
+    在 watchlist 同目录写 watchlist_degraded.json（{"degraded":true,"reason":...}），
+    供健康巡检自动化读取并推送告警；正常成功路径会清理该哨兵（自愈闭环）。
 """
 import json
 import os
@@ -82,6 +87,31 @@ def _atomic_write_json(path, obj, *, indent=4):
         raise
 
 
+def write_degraded(path, reason, detail=None):
+    """写降级哨兵文件（Phase 3 D5 死人开关用）。
+
+    当发生「板块硬门禁拦截」或「本周无合格自动标的（picks==[]）」时写入
+    {"degraded":true,"reason":...,"ts":...}，供健康巡检自动化读取并推送告警。
+    正常成功路径会清理该哨兵（见 main 末尾），形成自愈闭环（无哨兵=健康）。
+    """
+    payload = {
+        "degraded": True,
+        "reason": reason,                 # blocked_boards | empty_picks
+        "detail": detail or "",
+        "ts": date.today().isoformat(),
+    }
+    _atomic_write_json(path, payload)
+
+
+def clear_degraded(path):
+    """正常成功更新后清掉遗留降级哨兵，形成自愈闭环。"""
+    try:
+        if os.path.exists(path) or os.path.islink(path):
+            os.remove(path)
+    except OSError:
+        pass
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="动态更新 watchlist.json（手动固定 + 自动每周轮换）")
@@ -98,6 +128,14 @@ def main():
         _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         args.watchlist = os.path.join(_root, args.watchlist)
 
+    # 降级哨兵固定落 data/ 目录（与 .gitignore 忽略项及健康巡检读取路径一致）；
+    # 不随 watchlist 实际路径漂移，确保巡检与 gitignore 对齐
+    _proj_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    degraded_dir = os.path.join(_proj_root, "data")
+    os.makedirs(degraded_dir, exist_ok=True)
+    degraded_path = os.path.join(degraded_dir, "watchlist_degraded.json")
+    wrote_empty = False
+
     # 1. 读取 AI 选出的新标的并校验
     with open(args.picks, encoding="utf-8") as f:
         new_picks = json.load(f)
@@ -110,11 +148,20 @@ def main():
         it["source"] = "auto"
         it.setdefault("type", "个股")
 
+    # 1a. 空选股：本周未选出任何合格自动标的（合法路径，仅剥离上周 auto）。
+    #     仍写降级哨兵，供巡检识别「本周无自动轮换」状态（哨兵将持续到下一个非空周）。
+    if not new_picks:
+        write_degraded(degraded_path, "empty_picks",
+                      "本周未选出合格标的，仅剥离上周 auto")
+        wrote_empty = True
+
     # 1b. 板块硬门禁（创业板等禁入板块）——放在任何写操作之前，违规即终止
     try:
         assert_board_allowed(new_picks)
     except ValueError as e:
         print(f"❌ {e}", file=sys.stderr)
+        # 门禁拦截=本轮未产出任何更新；写降级哨兵供健康巡检告警，再退出
+        write_degraded(degraded_path, "blocked_boards", str(e))
         sys.exit(2)
 
     # 2. 读取现有 watchlist（不存在则初始化结构）
@@ -144,6 +191,11 @@ def main():
     }
 
     _atomic_write_json(args.watchlist, final)
+
+    # 自愈：本次为正常成功更新（非空且未拦截）→ 清掉任何遗留降级哨兵；
+    # 若本周本就是空选股（wrote_empty），则保留 empty_picks 哨兵不动。
+    if not wrote_empty:
+        clear_degraded(degraded_path)
 
     print(f"Watchlist 更新成功！ETF: 手动{len(manual_etfs)}；"
           f"个股: 手动{len(manual_stocks)}+自动{len(new_picks)}")
