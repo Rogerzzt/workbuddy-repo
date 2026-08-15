@@ -28,8 +28,15 @@ _compute_signals_*.py
 _signals_*.json
 data/_signals_*.json
 
-# 注意：data/strategy_state_*.json 与 data/weekend_sentiment_*.json
-# 是状态机核心数据，保留纳入版本控制（不在忽略之列）。
+# ===== 每日状态 JSON（运行时产物，仅本地保留 + rotate_data.sh 轮转，移出 git 跟踪） =====
+# 原因：strategy_state_*/pre_market_state_*/weekend_sentiment_* 每日生成，纳入 git 会
+#       长期膨胀历史并拖慢追踪；闭环仅依赖最近 1~2 日，30 天轮转后自动清理。
+data/strategy_state_*.json
+data/pre_market_state_*.json
+data/weekend_sentiment_*.json
+
+# ===== 本地 Python 虚拟环境（akshare venv） =====
+workbuddy-repo/
 
 # ===== 系统文件 =====
 .DS_Store
