@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-08-15",
+  "space": "我的文档（资料库 personal 分类）",
+  "root_id": "YiSvzJ3alL6u1RAH6687v7",
+  "root_url": "https://www.workbuddy.cn/space/d/YiSvzJ3alL6u1RAH6687v7",
+  "pages": {
+    "index": {
+      "node_block_id": "YiSvzJ3alL6u1RAH6687v7",
+      "title": "股票项目文档中心",
+      "file": "docs/space-build/index.html",
+      "url": "https://www.workbuddy.cn/space/d/YiSvzJ3alL6u1RAH6687v7"
+    },
+    "proj_fin_analysis": {
+      "node_block_id": "gpSYOTUx4PNucoKeIb7053",
+      "title": "金融分析报告",
+      "file": "docs/space-build/proj_fin_analysis.html",
+      "url": "https://www.workbuddy.cn/space/d/gpSYOTUx4PNucoKeIb7053"
+    },
+    "proj_aquant": {
+      "node_block_id": "MkYqixJrousuokvI64Xyfx",
+      "title": "金融量化工具（aquant）",
+      "file": "docs/space-build/proj_aquant.html",
+      "url": "https://www.workbuddy.cn/space/d/MkYqixJrousuokvI64Xyfx"
+    },
+    "proj_diag": {
+      "node_block_id": "Xj2gBuoXLTHPCpC4FPy3CZ",
+      "title": "股票分析专家团",
+      "file": "docs/space-build/proj_diag.html",
+      "url": "https://www.workbuddy.cn/space/d/Xj2gBuoXLTHPCpC4FPy3CZ"
+    },
+    "proj_research": {
+      "node_block_id": "oXQzPB4sA87rY5L5K3j9cM",
+      "title": "股票研究专家",
+      "file": "docs/space-build/proj_research.html",
+      "url": "https://www.workbuddy.cn/space/d/oXQzPB4sA87rY5L5K3j9cM"
+    },
+    "proj_review": {
+      "node_block_id": "afnAAjjUt8EUbpdJsbKqLU",
+      "title": "市场总结专家",
+      "file": "docs/space-build/proj_review.html",
+      "url": "https://www.workbuddy.cn/space/d/afnAAjjUt8EUbpdJsbKqLU"
+    },
+    "theme_architecture": {
+      "node_block_id": "W78p5pmt1e1UYQLS97cRFJ",
+      "title": "统一架构与数据流",
+      "file": "docs/space-build/theme_architecture.html",
+      "url": "https://www.workbuddy.cn/space/d/W78p5pmt1e1UYQLS97cRFJ"
+    },
+    "theme_automations": {
+      "node_block_id": "0Fk74AOZv3h1UGWv49j57R",
+      "title": "自动化任务清单",
+      "file": "docs/space-build/theme_automations.html",
+      "url": "https://www.workbuddy.cn/space/d/0Fk74AOZv3h1UGWv49j57R"
+    },
+    "theme_config": {
+      "node_block_id": "iu8Fcp5A19lN7qcCQACPa7",
+      "title": "关键配置参考",
+      "file": "docs/space-build/theme_config.html",
+      "url": "https://www.workbuddy.cn/space/d/iu8Fcp5A19lN7qcCQACPa7"
+    }
+  }
+}

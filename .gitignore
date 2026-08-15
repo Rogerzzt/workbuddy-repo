@@ -47,3 +47,8 @@ workbuddy-repo/
 
 # WorkBuddy 项目记忆（含用户/项目信息，不纳入代码仓库）
 .workbuddy/
+
+# ===== 资料库文档构建产物（gen_space_docs.py 每次全量重建，不纳入版本控制） =====
+# 稳定资产是生成器脚本 scripts/gen_space_docs.py 与节点映射 docs/library_doc_map.json；
+# docs/space-build/ 为可重生成的 HTML，由周同步自动化消费。
+docs/space-build/
