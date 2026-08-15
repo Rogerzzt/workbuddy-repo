@@ -26,11 +26,21 @@ if [ ! -d "$BAK/fin-analysis-mirror.git" ]; then
 fi
 git push --mirror "$BAK/fin-analysis-mirror.git"
 
-echo "==> [2/3] 离线冷备 bundle"
+echo "==> [2/3] 离线冷备 bundle（原子性：先建 tmp → 校验 → 保留上一版 → 覆盖）"
 BUNDLE="$BAK/fin-analysis-$(date +%Y%m%d).bundle"
-rm -f "$BUNDLE"
-git bundle create "$BUNDLE" --all
-git bundle verify "$BUNDLE" >/dev/null && echo "    bundle 校验通过: $BUNDLE"
+TMP_BUNDLE="${BUNDLE}.tmp"
+rm -f "$TMP_BUNDLE"
+git bundle create "$TMP_BUNDLE" --all
+if git bundle verify "$TMP_BUNDLE" >/dev/null 2>&1; then
+    # 保留上一版健康备份作为兜底，再覆盖当日 bundle
+    [ -f "$BUNDLE" ] && mv -f "$BUNDLE" "${BUNDLE}.prev"
+    mv -f "$TMP_BUNDLE" "$BUNDLE"
+    echo "    bundle 校验通过: $BUNDLE"
+else
+    echo "    ❌ bundle 校验失败，保留旧备份: $BUNDLE" >&2
+    rm -f "$TMP_BUNDLE"
+    exit 1
+fi
 
 echo "==> [3/3] GitHub 云端热备"
 git push origin main
