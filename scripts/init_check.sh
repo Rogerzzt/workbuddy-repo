@@ -2,15 +2,15 @@
 # ============================================================================
 # init_check.sh — 公共前置（全局 DRY 抽象）
 # ----------------------------------------------------------------------------
-# 抽走 5 个量化自动化 prompt 中 100% 重复的「目录锚定 + 周几速退」纯 bash 逻辑。
+# 抽走 5 个量化自动化 prompt 中 100% 重复的「目录锚定 + 周几速退 + 法定节假日」纯 bash 逻辑。
 # 调用方式（由各任务 prompt 首行执行）：
 #   export TZ=Asia/Shanghai
-#   bash scripts/init_check.sh trading    # 交易日任务（周末速退）
-#   bash scripts/init_check.sh monday     # 周末情绪任务（仅周一）
-#   bash scripts/init_check.sh sunday     # 周日调仓任务（仅周日）
+#   bash scripts/init_check.sh trading    # 交易日任务（周末 + 法定节假日速退）
+#   bash scripts/init_check.sh monday     # 周末情绪任务（仅周一，且非节假日）
+#   bash scripts/init_check.sh sunday     # 周日调仓任务（仅周日，且非节假日）
 #
-# 注意：节假日检查（腾讯自选股 MCP 查 sh000001）依赖 LLM 调连接器，无法进 bash，
-#       仍保留在各任务 prompt 的「步骤 0 · 闸门二」中。
+# 注意：法定节假日检查已下沉到 bash 层（本地交易日历 config/trading_calendar_YYYY.txt），
+#       不再依赖 LLM 调连接器查 sh000001（避免 token 消耗与 MCP 抽风导致的误判）。
 # ============================================================================
 set -euo pipefail
 
@@ -44,5 +44,16 @@ case "$MODE" in
         exit 2
         ;;
 esac
+
+# ---- 4. 法定节假日检查（本地交易日历，离线硬逻辑，所有模式通用） ----
+# 周末已在上一步拦截；此处仅比对法定休市日清单（含邻接周末闭市日）。
+# 沙箱内无法联网探测东财（代理拦截），故必须用本地预置日历，而非 curl/LLM。
+TODAY_YMD=$(date +%Y-%m-%d)
+CAL_YEAR=$(date +%Y)
+CAL="$WS/config/trading_calendar_${CAL_YEAR}.txt"
+if [ -f "$CAL" ] && grep -qxF "$TODAY_YMD" "$CAL"; then
+    echo "📅 今日 ($TODAY_YMD) 为法定休市日，跳过。"
+    exit 0
+fi
 
 exit 0
