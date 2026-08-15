@@ -34,6 +34,10 @@ data/_signals_*.json
 data/strategy_state_*.json
 data/pre_market_state_*.json
 data/weekend_sentiment_*.json
+# D4b：strategy_state_latest.json 是 write_state.py 维护的软链接指针（指针对应被忽略的带日期文件）
+data/strategy_state_latest.json
+# D5：周日调仓/健康巡检哨兵（运行时产物，命中即告警并删除，不纳入 git）
+data/watchlist_degraded.json
 
 # ===== 本地 Python 虚拟环境（akshare venv） =====
 workbuddy-repo/

@@ -72,6 +72,19 @@ def main():
             json.dump(data, f, ensure_ascii=False, indent=2)
             f.write("\n")
         os.replace(tmp, args.outfile)
+        # D4b：维护 strategy_state_latest.json 软链接（指向最新落盘文件，
+        #      供各 prompt / 巡检自动化直接读取，避免 glob+正则扫描的命名漂移隐患）。
+        #      仅当落盘对象为 strategy_state_*.json 时才建立该指针（pre_market_state /
+        #      weekend_sentiment 等不建立，保持单一事实指针）。
+        if os.path.basename(args.outfile).startswith("strategy_state_") and args.outfile.endswith(".json"):
+            latest_link = os.path.join(out_dir, "strategy_state_latest.json")
+            try:
+                if os.path.lexists(latest_link):
+                    os.unlink(latest_link)
+                os.symlink(os.path.basename(args.outfile), latest_link)
+                print(f"🔗 已更新软链接: {latest_link} -> {os.path.basename(args.outfile)}")
+            except OSError as e:
+                print(f"⚠️ 软链接更新失败（不影响主落盘）: {e}", file=sys.stderr)
     except OSError as e:
         try:
             os.unlink(tmp)

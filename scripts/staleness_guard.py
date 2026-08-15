@@ -63,6 +63,17 @@ def is_trading_day(d: date, ws: str) -> bool:
 
 
 def find_latest_state(state_dir: str):
+    # D4b：优先读 strategy_state_latest.json 软链接（write_state.py 维护，指向最新日期文件）。
+    #      软链接存在且指向合法日期文件时直接采用，避免 glob+max 扫描的命名漂移隐患。
+    latest_link = os.path.join(state_dir, "strategy_state_latest.json")
+    if os.path.islink(latest_link) or os.path.lexists(latest_link):
+        target = os.path.realpath(latest_link)
+        m = STATE_RE.search(os.path.basename(target))
+        if m and os.path.exists(target):
+            dt = datetime.strptime(m.group(1), "%Y%m%d").date()
+            return dt, target
+    # 回退：glob + max（向后兼容，无软链接 / 软链接损坏时仍可用）。
+    #      注意 strategy_state_latest.json 本身不匹配 STATE_RE(\d{8})，会被自然跳过。
     best = None
     best_dt = None
     for p in glob.glob(os.path.join(state_dir, "strategy_state_*.json")):
