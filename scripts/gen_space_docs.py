@@ -32,10 +32,6 @@ DB = os.path.expanduser("~/.workbuddy/workbuddy.db")
 AUTO_IDS = {
     "金融分析报告": ["1786178221229", "1786114300129", "1785509026608",
                    "1785509026673", "1785424522347", "1786203745042", "1786291286955"],
-    "金融量化工具": ["1785945200043"],
-    "股票分析专家团": [],
-    "股票研究专家": [],
-    "市场总结专家": [],
 }
 # 静态 fallback：id -> (名称, 触发, 核心产出)
 AUTO_STATIC = {
@@ -124,106 +120,9 @@ PROJECTS = [
             ("docs/report_format_spec.md", "排版单一事实源：行政研报级 5 强制规则 + 5 模板 + 零裸 HTML 防御。"),
             (".gitignore", "忽略每日状态 JSON（strategy_state_*/pre_market_state_*/watchlist_degraded.json）。"),
         ],
-        "deps": "下游被 股票分析专家团 / 股票研究专家 读取 watchlist；与 金融量化工具(aquant) 共享 watchlist 数据源。",
+        "deps": "watchlist.json 与交易日历为项目内部单一数据源（项目外复用由外部工程自行加载，不在本中心维护）。",
         "notes": "沙箱代理拦截 eastmoney/github，AkShare/爬虫须在 Mac 本机跑，脚本自动降级标注「🔴数据缺失」不阻塞；报告顶部对 STALE 数据源必🔴标注。",
         "auto_ids": AUTO_IDS["金融分析报告"],
-    },
-    {
-        "key": "proj_aquant", "title": "金融量化工具（aquant）",
-        "subtitle": "A股/ETF 盘后信号监控系统（纯 Python 量化信号引擎）",
-        "background": "代号 aquant 的盘后信号监控系统。抓取多源日线 → 计算「收盘价 > MA20(含当日) 且 量 ≥ VOL_MA5 × 1.5」信号 → 生成本地 Markdown 报告 → 由上层自动化上传腾讯文档。四阶段设计（数据获取/策略引擎/推送组装/部署），最终放弃 GitHub Actions 改用 WorkBuddy 自动化，复用金融分析报告的 watchlist。",
-        "arch": (
-            "   data_fetcher(东财主/腾讯备)\n"
-            "        │  FetchResult: OK/STALE/NO_DATA/ERROR\n"
-            "        ▼\n"
-            "   cleaner → factors(MA20/VOL_MA5/量比)\n"
-            "        │\n"
-            "        ▼\n"
-            "   signals(三分类 TRIGGERED/NORMAL/ABNORMAL)\n"
-            "        │\n"
-            "        ▼\n"
-            "   format_markdown → 报告落盘(金融量化报告/)\n"
-        ),
-        "modules": [
-            ("main.py", "CLI 入口：--watchlist/--dry-run/--force/--out-dir/-v；交易日判断 + 策略执行 + 报告落盘。"),
-            ("core/config.py", "全局常量：结算红线 15:30、MA20/VOL_MA5/1.5x 参数、REPORT_DIR、DISPLAY_ALIAS、WATCH_POOL。"),
-            ("core/data_fetcher.py", "多源取数（东财主/腾讯备），FetchResult 四状态。"),
-            ("core/cleaner.py", "清洗，返回 CleanReport 审计对象。"),
-            ("core/factors.py", "向量化因子（MA20/VOL_MA5/量比）。"),
-            ("core/signals.py", "三分类 TRIGGERED/NORMAL/ABNORMAL + format_markdown()/format_title()。"),
-            ("core/fund_flow.py", "主力资金流向（纯展示辅助，不参与触发判定）。"),
-            ("core/trade_calendar.py", "交易日历三级降级 + last_settled_trade_date()。"),
-            ("core/watchlist.py", "load_symbols() 解析外部 watchlist.json。"),
-        ],
-        "configs": [
-            ("aquant/.cache/trade_calendar.csv", "本地交易日历缓存。"),
-            (".secrets/pushplus.token", "已弃用（推送改为腾讯文档上传）。"),
-            ("config/watchlist.json（来自金融分析报告）", "单一数据源，外部加载，不另维护。"),
-        ],
-        "deps": "复用 金融分析报告 config/watchlist.json；产出到 金融量化报告/盘后信号监控-YYYYMMDD.md。",
-        "notes": "自动化 1785945200043 工作日 15:30 触发；结算红线 15:30（盘后数据须待结算后取数）。",
-        "auto_ids": AUTO_IDS["金融量化工具"],
-    },
-    {
-        "key": "proj_diag", "title": "股票分析专家团",
-        "subtitle": "标的深度诊断与对比分析（消费端项目）",
-        "background": "对 watchlist 内 ETF/个股出具深度诊断与对比分析报告。约定所有分析标的清单统一读取金融分析报告的 config/watchlist.json（单一数据源），不再维护工作区内 HTML 清单。",
-        "arch": (
-            "   金融分析报告/config/watchlist.json\n"
-            "                │  (单一数据源)\n"
-            "                ▼\n"
-            "   单标的诊断(ETF/个股) + 组合/对比 HTML\n"
-        ),
-        "modules": [
-            ("515880诊断报告.md / 588170诊断报告.md", "单 ETF 深度诊断。"),
-            ("药明康德诊断报告.md / 多氟多诊断报告.md", "单股深度诊断。"),
-            ("半导体ETF三只对比分析.html", "组合/对比分析（HTML 可视化）。"),
-            ("标的清单组合诊断报告.html", "组合级诊断。"),
-            ("deliverables/a-share/etf-buy-decision-588170", "ETF 买入决策。"),
-            ("deliverables/a-share/stock-deep-catl", "个股深度（宁德时代等）。"),
-        ],
-        "configs": [
-            (".workbuddy/memory/MEMORY.md", "标的清单单一数据源约定（读金融分析报告 watchlist）。"),
-        ],
-        "deps": "依赖 金融分析报告 watchlist。",
-        "notes": "无独立自动化（由专家/手动驱动）。",
-        "auto_ids": AUTO_IDS["股票分析专家团"],
-    },
-    {
-        "key": "proj_research", "title": "股票研究专家",
-        "subtitle": "个股首次覆盖研究报告 + 财务模型 + 估值分析",
-        "background": "生成个股「首次覆盖研究报告 + 财务模型 + 估值分析」标准研报（DOCX + XLSX + 图表）。已产出 合锻智能（603011）、药明康德（603259）完整套件。",
-        "arch": (
-            "   基础数据/财报 → build_model.py → 财务模型.xlsx(10 tabs) + charts/*.png\n"
-            "                → build_docx.py → 首次覆盖报告.docx(嵌入图表)\n"
-        ),
-        "modules": [
-            ("build_docx.py", "Markdown → 排版 DOCX（首次覆盖报告）+ 嵌入图表。"),
-            ("build_model.py", "财务模型（xlsx 10 tabs）+ 图表（charts/*.png，13 张 300DPI）。"),
-        ],
-        "configs": [
-            (".workbuddy/memory/2026-08-08.md", "项目工作日志与约定。"),
-        ],
-        "deps": "独立研报生成，消费公开财报/研报数据。",
-        "notes": "无自动化。",
-        "auto_ids": AUTO_IDS["股票研究专家"],
-    },
-    {
-        "key": "proj_review", "title": "市场总结专家",
-        "subtitle": "A股大盘每日复盘总结",
-        "background": "对 A股市场进行每日复盘总结，输出复盘报告。",
-        "arch": (
-            "   行情/盘面数据 → 复盘总结 → daily-review/复盘_YYYYMMDD.html\n"
-        ),
-        "modules": [
-            ("daily-review/复盘_20260807.html", "每日复盘产物。"),
-        ],
-        "configs": [
-            (".workbuddy/memory/2026-08-08.md", "项目工作日志。"),
-        ],
-        "deps": "独立复盘，不依赖其它项目 watchlist。",
-        "notes": "无独立自动化。",
-        "auto_ids": AUTO_IDS["市场总结专家"],
     },
 ]
 
@@ -233,21 +132,14 @@ PROJECTS = [
 THEME_ARCH = {
     "key": "theme_architecture", "title": "统一架构与数据流",
     "body": """
-<p>本组股票项目以 <b>金融分析报告</b> 为中枢，形成「单一数据源 → 多消费端」的架构：</p>
+<p>本中心仅聚焦 <b>金融分析报告</b> 项目本身，不再承载其它消费端项目文档：</p>
 <pre>config/watchlist.json (v5, 16只)  ──┐
 config/trading_calendar_*.txt      ──┤ 单一数据源（离线，沙箱禁联网）
 docs/report_format_spec.md         ──┘
         │
-        ├─▶ 金融分析报告（5 套自动化闭环：采集→盘前→午间→盘后→调仓）
-        │       产出 reports/*.md + strategy_state / pre_market_state JSON
-        │
-        ├─▶ 金融量化工具 aquant（盘后信号引擎，复用 watchlist）
-        │       产出 金融量化报告/盘后信号监控-*.md
-        │
-        ├─▶ 股票分析专家团（读 watchlist 出诊断/对比报告）
-        ├─▶ 股票研究专家（首次覆盖研报 DOCX/XLSX）
-        └─▶ 市场总结专家（每日大盘复盘）</pre>
-<p><b>关键约束</b>：① watchlist.json / 交易日历为唯一权威，下游不得另维护清单；② 创业板 300/301 段受 BLOCKED_BOARDS 硬门禁（仅 auto 标的影响，manual 不受限）；③ 沙箱代理拦截 eastmoney/github，AkShare/爬虫与 GitHub push 须在本机 Mac 终端执行。</p>
+        └─▶ 金融分析报告（5 套自动化闭环：采集→盘前→午间→盘后→调仓）
+                产出 reports/*.md + strategy_state / pre_market_state JSON</pre>
+<p><b>关键约束</b>：① watchlist.json / 交易日历为唯一权威；② 创业板 300/301 段受 BLOCKED_BOARDS 硬门禁（仅 auto 标的影响，manual 不受限）；③ 沙箱代理拦截 eastmoney/github，AkShare/爬虫与 GitHub push 须在本机 Mac 终端执行。</p>
 """,
 }
 
@@ -367,7 +259,7 @@ def render_index(themes, docmap=None):
         for t in themes)
     body = (
         "<p class='subtitle'>资料库·我的文档 / 股票项目文档中心</p>"
-        "<p>本中心汇集 5 个核心股票相关项目（金融分析报告 / 金融量化工具 / 股票分析专家团 / 股票研究专家 / 市场总结专家）的结构化文档，并按项目与主题双维度组织。各文档作为本页的子节点挂载于资料库目录树，可直接在资料库内逐层展开浏览。</p>"
+        "<p>本中心仅聚焦「金融分析报告」项目的结构化文档，按项目与主题双维度组织。各文档作为本页的子节点挂载于资料库目录树，可直接在资料库内逐层展开浏览。</p>"
         "<h2>项目页</h2><ul>%s</ul>"
         "<h2>主题页</h2><ul>%s</ul>"
         "<div class='note'>文档由自动化「股票项目文档周同步」每周日 21:00 全量重建并整体覆盖，随项目状态保持同步。人工无需维护。</div>"
@@ -420,7 +312,7 @@ def main():
                 seen.add(aid)
                 all_ids.append(aid)
     autos_body = (
-        "<p>本表汇总 5 个核心股票项目相关的全部 WorkBuddy 自动化（运行时传完整带前缀 id，如 "
+        "<p>本表汇总「金融分析报告」项目的全部 WorkBuddy 自动化（运行时传完整带前缀 id，如 "
         "<code>automation-1785424522347</code>）。名称/触发来自 workbuddy.db 实时读取。</p>"
         + table(["自动化 ID（带前缀）", "名称", "触发(rrule)", "核心产出"], auto_rows(all_ids, db)))
     theme_autos = {"key": "theme_automations", "title": "自动化任务清单", "body": autos_body}
