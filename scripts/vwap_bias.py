@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-vwap_bias.py — VWAP 量价双因子清洗 (D2b · Phase 2 可信性层)
+vwap_bias.py — VWAP 量价双因子清洗 (D2b · Phase 2 可信性层 / Phase 4 Flow Ratio 升级)
 
 设计目标
 --------
 纯 LLM 层的资金流判定（只看"主力净流入正负"）容易被对倒/被动承接误导。
-本脚本以**双因子**修正：
+本脚本以**双因子 + 资金幅度阈值（Flow Ratio）**修正：
+    前置门槛：主力净流占比 FLOW_RATIO = 主力净流入 / 成交额
+              |FLOW_RATIO| < 2% → 直接 ⚪ 主力中性（散户博弈/随机噪音，无指引意义）
     因子① 主力净流入方向（westock fund_flow / 腾讯主力净流入）
     因子② 收盘价相对 VWAP 的位置（主动买入 → 收在均价线之上）
-    双因子共振 → 🟣 主力加仓；净流入为正但收在 VWAP 之下 → 🟣 资金对倒诱多/被动承接
-
-🛡️ 极小值过滤（用户协同）：当 |主力净流入| < 成交额 × 2% 时，直接输出 ⚪ 主力中性，
-    避免在"垃圾时间"微幅波动里产生过度解读。
+    组合判定（Phase 4 五档 · emoji 铁律：主力行为一律 🟣/⚪，严禁 🔴/🟢）：
+        ≥ +2% 且 收盘 ≥ VWAP → 🟣 主力加仓（真金白银推升，成本线踩在脚下）
+        ≥ +2% 且 收盘 < VWAP → 🟣 主力诱多/被动承接（大单对倒嫌疑）
+        ≤ -2% 且 收盘 < VWAP → 🟣 主力减仓（坚决砸盘出货，均价线成阻力）
+        ≤ -2% 且 收盘 ≥ VWAP → 🟣 主力洗盘（资金大幅流出但价强于均价，压盘洗筹）
 
 数据来源
 --------
@@ -23,8 +26,9 @@ vwap_bias.py — VWAP 量价双因子清洗 (D2b · Phase 2 可信性层)
 输出（供 prompt 注入 / grep）
 -----------------------------
     VWAP=<float>
+    FLOW_RATIO=<±x.xx%>          # 主力净流入 / 成交额（资金幅度）
     CLOSE_VWAP_RATIO=<float, 如 +0.0123>
-    TRUE_FLOW_BIAS=<🟣 主力加仓 | 🟣 资金对倒诱多/被动承接 | 🔴 主力减仓 | ⚪ 主力中性>
+    TRUE_FLOW_BIAS=<🟣 主力加仓 | 🟣 主力诱多/被动承接 | 🟣 主力减仓 | 🟣 主力洗盘 | ⚪ 主力中性>
     STATUS=<ok | error>
 并附一行人类可读结论。
 
@@ -69,35 +73,43 @@ def compute_vwap(minutes):
 
 
 def classify(close, vwap, main_net_inflow, turnover, small_ratio=SMALL_INFLOW_RATIO):
-    """双因子分类。返回 (verdict:str, reason:str)。"""
-    # 极小值过滤：垃圾时间
-    if turnover and abs(float(main_net_inflow)) < abs(float(turnover)) * small_ratio:
-        return ("⚪ 主力中性",
-                "净流入绝对值低于成交额 %.0f%%，属垃圾时间微幅波动，避免过度解读" % (small_ratio * 100))
+    """双因子 + Flow Ratio 五档分类。返回 (verdict:str, reason:str)。
+    emoji 铁律：主力行为一律 🟣/⚪（🔴/🟢 仅表价格涨跌，严禁用于主力行为）。"""
+    # 前置门槛：资金幅度过滤（Phase 4 Flow Ratio）
+    flow_ratio = (float(main_net_inflow) / abs(float(turnover))) if turnover else 0.0
+    if turnover:
+        if abs(float(main_net_inflow)) < abs(float(turnover)) * small_ratio:
+            return ("⚪ 主力中性",
+                    "主力净流占比 %.2f%%（|Flow Ratio| < %.0f%% 阈值），量级太小属散户博弈/随机噪音，无指引意义"
+                    % (flow_ratio * 100, small_ratio * 100))
 
     mni = float(main_net_inflow)
     if vwap is None or vwap <= 0:
-        # 退化为仅看净流入符号
+        # 退化为仅看净流入符号（此时已通过 2% 门槛）
         if mni > 0:
             return ("🟣 主力加仓(无VWAP)", "未取到 VWAP，按主力净流入为正判定加仓（置信降级）")
         if mni < 0:
-            return ("🔴 主力减仓", "未取到 VWAP，按主力净流出判定减仓")
+            return ("🟣 主力减仓", "未取到 VWAP，按主力净流出判定减仓（置信降级）")
         return ("⚪ 主力中性", "净流入≈0 且无 VWAP，方向不明")
 
     c = float(close)
     ratio = c / vwap - 1.0
     if mni > 0 and c >= vwap:
         return ("🟣 主力加仓",
-                "主力净流入为正且收盘(%.3f)站上VWAP(%.3f)，主动买入意愿真实 (CLOSE_VWAP_RATIO=%+.2f%%)"
-                % (c, vwap, ratio * 100))
+                "净流占比 %+.2f%% 且收盘(%.3f)站上VWAP(%.3f)，真金白银推升、成本线踩在脚下 (CLOSE_VWAP_RATIO=%+.2f%%)"
+                % (flow_ratio * 100, c, vwap, ratio * 100))
     if mni > 0 and c < vwap:
-        return ("🟣 资金对倒诱多/被动承接",
-                "主力净流入为正但收盘(%.3f)低于VWAP(%.3f)，疑似对倒或被动接盘 (CLOSE_VWAP_RATIO=%+.2f%%)"
-                % (c, vwap, ratio * 100))
-    if mni < 0:
-        return ("🔴 主力减仓",
-                "主力净流出(%.0f)且收盘(%.3f)%sVWAP(%.3f)"
-                % (mni, c, "低于" if c < vwap else "高于", vwap))
+        return ("🟣 主力诱多/被动承接",
+                "净流占比 %+.2f%% 但收盘(%.3f)低于VWAP(%.3f)，未能稳住均价，疑似大单对倒诱多 (CLOSE_VWAP_RATIO=%+.2f%%)"
+                % (flow_ratio * 100, c, vwap, ratio * 100))
+    if mni < 0 and c < vwap:
+        return ("🟣 主力减仓",
+                "净流占比 %+.2f%% 且收盘(%.3f)低于VWAP(%.3f)，坚决砸盘出货、均价线成阻力 (CLOSE_VWAP_RATIO=%+.2f%%)"
+                % (flow_ratio * 100, c, vwap, ratio * 100))
+    if mni < 0 and c >= vwap:
+        return ("🟣 主力洗盘",
+                "净流占比 %+.2f%% 但收盘(%.3f)不低于VWAP(%.3f)，资金流出而价强于均价，压盘洗筹震出散户 (CLOSE_VWAP_RATIO=%+.2f%%)"
+                % (flow_ratio * 100, c, vwap, ratio * 100))
     return ("⚪ 主力中性", "净流入≈0，方向不明")
 
 
@@ -183,7 +195,9 @@ def run(code, date=None, close=None, vwap=None, main_net_inflow=None, turnover=N
 
     verdict, reason = classify(close, vwap, main_net_inflow, turnover)
     ratio = (float(close) / float(vwap) - 1.0) if vwap else float("nan")
+    flow_ratio = (float(main_net_inflow) / abs(float(turnover))) if turnover else float("nan")
     print("VWAP=%s" % ("%.4f" % vwap if vwap else "NaN"))
+    print("FLOW_RATIO=%s" % ("%+.2f%%" % (flow_ratio * 100) if turnover else "NaN"))
     print("CLOSE_VWAP_RATIO=%s" % ("%+.4f" % ratio if vwap else "NaN"))
     print("TRUE_FLOW_BIAS=%s" % verdict)
     print("STATUS=%s" % status)
@@ -192,13 +206,14 @@ def run(code, date=None, close=None, vwap=None, main_net_inflow=None, turnover=N
 
 
 def selftest():
-    """沙箱逻辑自测：不依赖网络，验证双因子 + 极小值过滤。"""
+    """沙箱逻辑自测：不依赖网络，验证双因子 + Flow Ratio 五档 + 极小值过滤。"""
     cases = [
         # (close, vwap, mni, turnover, expect_contains)
-        (1.03, 1.00, 1.2e8, 5e9, "🟣 主力加仓"),          # 净流入+且收>VWAP
-        (0.99, 1.00, 1.2e8, 5e9, "🟣 资金对倒诱多/被动承接"),  # 净流入+但收<VWAP
-        (0.98, 1.00, -1.2e8, 5e9, "🔴 主力减仓"),            # 净流出
-        (1.00, 1.00, 1e6, 5e9, "⚪ 主力中性"),             # 极小值过滤
+        (1.03, 1.00, 1.2e8, 5e9, "🟣 主力加仓"),          # ≥+2% 且收>VWAP
+        (0.99, 1.00, 1.2e8, 5e9, "🟣 主力诱多/被动承接"),  # ≥+2% 但收<VWAP
+        (0.98, 1.00, -1.2e8, 5e9, "🟣 主力减仓"),           # ≤-2% 且收<VWAP
+        (1.02, 1.00, -1.2e8, 5e9, "🟣 主力洗盘"),           # ≤-2% 但收≥VWAP
+        (1.00, 1.00, 1e6, 5e9, "⚪ 主力中性"),             # |Flow Ratio|<2% 极小值过滤
         (1.00, None, 1.2e8, 5e9, "🟣 主力加仓(无VWAP)"),    # 无VWAP退化
     ]
     ok = True
